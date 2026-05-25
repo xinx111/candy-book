@@ -214,7 +214,7 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
               </div>
             )}
             <div className="text-sm text-white/70 mt-0.5">
-              已记录 {records.length} 块甜品/饮品
+              已记录 {records.length} 块甜品
             </div>
           </div>
         </div>

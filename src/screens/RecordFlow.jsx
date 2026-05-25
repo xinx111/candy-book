@@ -245,8 +245,8 @@ export default function RecordFlow({ navigateTo, goBack, loadRecords, checkAchie
               <img src={photo} alt="" className="w-full h-full object-cover" />
             ) : (
               <div className="text-center text-white/50">
-                <div className="text-5xl mb-2">🍰🧋</div>
-                <div className="text-sm">甜品/饮品拍照区</div>
+                <div className="text-5xl mb-2">🍰🧋🍦</div>
+                <div className="text-sm">甜品 · 饮品 · 冰品拍照区</div>
               </div>
             )}
           </div>
@@ -330,7 +330,7 @@ export default function RecordFlow({ navigateTo, goBack, loadRecords, checkAchie
             <div className="mt-4 h-6">
               {aiLoading && (
                 <div className="text-xs text-matcha animate-pulse">
-                  🤖 正在识别甜品/饮品…
+                  🤖 正在识别…
                 </div>
               )}
               {aiResult && !aiLoading && (
@@ -704,7 +704,7 @@ export default function RecordFlow({ navigateTo, goBack, loadRecords, checkAchie
               </span>
             ))}
             <div className="anim-pop bg-caramel text-white px-10 py-5 rounded-lg text-lg font-semibold shadow-[0_8px_30px_rgba(139,94,60,0.3)]">
-              🥄 第 {feedbackCount} 份甜品/饮品已入册
+              🥄 第 {feedbackCount} 份已入册
             </div>
           </div>
         )}
