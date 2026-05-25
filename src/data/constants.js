@@ -35,7 +35,7 @@ export const ACHIEVEMENTS = [
   {
     id: 'ice_hunter', emoji: '🍦', name: '冰淇淋猎人',
     desc: '记录 20 种冰淇淋',
-    check: (r) => new Set(r.filter((x) => x.flavor?.includes('ice')).map((x) => x.id)).size >= 20,
+    check: (r) => r.filter((x) => x.category === '冰品').length >= 20,
   },
   { id: 'traveler', emoji: '🌏', name: '甜品旅行家', desc: '在 5 个城市吃过甜品', check: (r) => new Set(r.filter((x) => x.location).map((x) => x.location.split('市')[0] || x.location)).size >= 5 },
   {

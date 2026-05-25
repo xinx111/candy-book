@@ -12,7 +12,6 @@ import DetailScreen from './screens/DetailScreen'
 import WishlistScreen from './screens/WishlistScreen'
 import ProfileScreen from './screens/ProfileScreen'
 import SettingsScreen from './screens/SettingsScreen'
-import EditScreen from './screens/EditScreen'
 import AchievementModal from './components/AchievementModal'
 import { ACHIEVEMENTS } from './data/constants'
 
@@ -104,9 +103,7 @@ export default function App() {
         return <ProfileScreen {...props} />
       case 'settings':
         return <SettingsScreen {...props} />
-      case 'edit':
-        return <EditScreen {...props} />
-      case 'weekly-report':
+case 'weekly-report':
         return <WeeklyReportScreen {...props} />
       case 'shop-detail':
         return <ShopDetailScreen {...props} />

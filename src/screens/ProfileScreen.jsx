@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from 'react'
-import { getAllRecords, clearAll, importRecords, getMonthlyStats } from '../data/store'
+import { clearAll, getMonthlyStats } from '../data/store'
 import { ACHIEVEMENTS } from '../data/constants'
 import { compressImage } from '../utils/image'
 
@@ -25,24 +25,10 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
     return localStorage.getItem('tangji-birthday') || ''
   })
   const [birthdayInput, setBirthdayInput] = useState(birthday)
-  const [showDataMenu, setShowDataMenu] = useState(false)
   const [showAchievements, setShowAchievements] = useState(false)
-  const importRef = useRef(null)
   const avatarFileRef = useRef(null)
-  const [importMsg, setImportMsg] = useState('')
 
   const stats = useMemo(() => getMonthlyStats(records), [records])
-
-  const totalSpent = useMemo(() => {
-    return records
-      .filter((r) => r.price != null && !r.is_homemade)
-      .reduce((s, r) => s + Number(r.price), 0)
-  }, [records])
-
-  const avgRating = useMemo(() => {
-    if (records.length === 0) return '0.0'
-    return (records.reduce((s, r) => s + r.rating, 0) / records.length).toFixed(1)
-  }, [records])
 
   const unlocked = useMemo(() => {
     return new Set(ACHIEVEMENTS.filter((a) => a.check(records)).map((a) => a.id))
@@ -117,38 +103,6 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
     setShowBirthdayPicker(false)
   }
 
-  const handleExportJSON = async () => {
-    const all = await getAllRecords()
-    const blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `糖记_备份_${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
-  const handleImport = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setImportMsg('')
-    try {
-      const text = await file.text()
-      const data = JSON.parse(text)
-      if (!Array.isArray(data) || data.length === 0) {
-        setImportMsg('文件格式不对')
-        return
-      }
-      const count = await importRecords(data)
-      setImportMsg(`✅ 成功导入 ${count} 条`)
-      await loadRecords()
-    } catch (err) {
-      setImportMsg('导入失败：' + err.message)
-    }
-    e.target.value = ''
-    setTimeout(() => setImportMsg(''), 4000)
-  }
-
   const handleDeleteAll = () => {
     if (window.confirm('确定要删除所有记录吗？此操作不可恢复。')) {
       clearAll().then(() => loadRecords())
@@ -158,7 +112,6 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
   const menuItems = [
     { icon: '📋', label: '想吃清单', color: 'text-strawberry', onClick: () => navigateTo('wishlist') },
     { icon: '🏆', label: '成就墙', color: 'text-caramel', onClick: () => setShowAchievements(!showAchievements) },
-    { icon: '📊', label: '数据管理', color: 'text-matcha', onClick: () => setShowDataMenu(!showDataMenu) },
     { icon: '⚙️', label: '设置', color: 'text-text-secondary', onClick: () => navigateTo('settings') },
   ]
 
@@ -296,11 +249,11 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
             <div className="text-[11px] text-white/60">本月·块</div>
           </div>
           <div className="flex-1 bg-white/15 rounded-lg py-2 text-center">
-            <div className="text-white font-bold text-lg">¥{totalSpent}</div>
+            <div className="text-white font-bold text-lg">¥{stats.totalSpent}</div>
             <div className="text-[11px] text-white/60">总计花费</div>
           </div>
           <div className="flex-1 bg-white/15 rounded-lg py-2 text-center">
-            <div className="text-white font-bold text-lg">🥄{avgRating}</div>
+            <div className="text-white font-bold text-lg">🥄{stats.avgRating}</div>
             <div className="text-[11px] text-white/60">平均评分</div>
           </div>
         </div>
@@ -358,25 +311,6 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
               </div>
             )}
 
-            {/* Data management submenu */}
-            {item.label === '数据管理' && showDataMenu && (
-              <div className="px-4 pb-2">
-                <div
-                  className="flex justify-between items-center py-2.5 border-b border-border text-sm text-text-primary cursor-pointer"
-                  onClick={handleExportJSON}
-                >
-                  导出备份 (JSON) <span className="text-text-muted">›</span>
-                </div>
-                <div
-                  className="flex justify-between items-center py-2.5 border-b border-border text-sm text-text-primary cursor-pointer"
-                  onClick={() => importRef.current?.click()}
-                >
-                  导入备份 (JSON) <span className="text-text-muted">›</span>
-                </div>
-                <input ref={importRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
-                {importMsg && <div className="text-xs text-matcha pt-1">{importMsg}</div>}
-              </div>
-            )}
           </div>
         ))}
       </div>

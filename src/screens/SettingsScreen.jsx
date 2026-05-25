@@ -2,9 +2,6 @@ import { useState, useRef } from 'react'
 import { getAllRecords, clearAll, importRecords } from '../data/store'
 
 export default function SettingsScreen({ goBack, loadRecords }) {
-  const [weeklyReport, setWeeklyReport] = useState(true)
-  const [showPrice, setShowPrice] = useState(true)
-  const [iCloudSync, setICloudSync] = useState(false)
   const [importMsg, setImportMsg] = useState('')
   const importRef = useRef(null)
 
@@ -94,45 +91,6 @@ export default function SettingsScreen({ goBack, loadRecords }) {
         {importMsg && <div className="text-xs text-matcha pt-2">{importMsg}</div>}
         <div className="flex justify-between items-center py-3.5 border-b border-border text-sm text-text-primary cursor-pointer" onClick={handleExportMarkdown}>
           导出为 Markdown <span className="text-text-muted">›</span>
-        </div>
-        <div className="flex justify-between items-center py-3.5 border-b border-border text-sm text-text-primary cursor-pointer">
-          导出照片合集 (ZIP) <span className="text-text-muted">›</span>
-        </div>
-        <div className="flex justify-between items-center py-3.5 border-b border-border text-sm text-text-primary">
-          iCloud 同步 <span className={`toggle-switch ${iCloudSync ? 'on' : ''}`} onClick={() => setICloudSync(!iCloudSync)} />
-        </div>
-      </div>
-
-      {/* Display */}
-      <div className="px-5 pb-4">
-        <div className="text-xs font-semibold text-text-muted uppercase tracking-[0.5px] pb-2">显示</div>
-        <div className="flex justify-between items-center py-3.5 border-b border-border text-sm text-text-primary cursor-pointer">
-          首页布局 <span className="text-caramel">列表</span>
-        </div>
-        <div className="flex justify-between items-center py-3.5 border-b border-border text-sm text-text-primary cursor-pointer">
-          启动时显示 <span className="text-caramel">手账</span>
-        </div>
-        <div className="flex justify-between items-center py-3.5 border-b border-border text-sm text-text-primary cursor-pointer">
-          应用图标 <span className="text-caramel">默认</span>
-        </div>
-      </div>
-
-      {/* Record prefs */}
-      <div className="px-5 pb-4">
-        <div className="text-xs font-semibold text-text-muted uppercase tracking-[0.5px] pb-2">记录偏好</div>
-        <div className="flex justify-between items-center py-3.5 border-b border-border text-sm text-text-primary cursor-pointer">
-          默认温度 <span className="text-text-muted">不预设</span>
-        </div>
-        <div className="flex justify-between items-center py-3.5 border-b border-border text-sm text-text-primary">
-          显示价格字段 <span className={`toggle-switch ${showPrice ? 'on' : ''}`} onClick={() => setShowPrice(!showPrice)} />
-        </div>
-      </div>
-
-      {/* Reminders */}
-      <div className="px-5 pb-4">
-        <div className="text-xs font-semibold text-text-muted uppercase tracking-[0.5px] pb-2">提醒</div>
-        <div className="flex justify-between items-center py-3.5 border-b border-border text-sm text-text-primary">
-          每周甜品总结 <span className={`toggle-switch ${weeklyReport ? 'on' : ''}`} onClick={() => setWeeklyReport(!weeklyReport)} />
         </div>
       </div>
 

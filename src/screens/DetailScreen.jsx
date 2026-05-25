@@ -167,7 +167,7 @@ export default function DetailScreen({ params, navigateTo, goBack, loadRecords }
         </button>
         <button
           className="btn-pill bg-white text-caramel border-[1.5px] border-border"
-          onClick={() => navigateTo('edit', { id: record.id })}
+          onClick={() => navigateTo('record', { id: record.id })}
         >
           ✏️ 编辑
         </button>
