@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>糖记 — UI 交互原型</title>
+<style>
+/* ===== Design Tokens ===== */
+:root {
+  --cream: #FFFBF5;
+  --caramel: #8B5E3C;
+  --strawberry: #E8716D;
+  --matcha: #7DA87B;
+  --butter: #F5D6A8;
+  --text-primary: #3C2415;
+  --text-secondary: #A0806E;
+  --text-muted: #C4B0A0;
+  --border: #EDE0D4;
+  --card-bg: #FFFFFF;
+  --card-shadow: 0 2px 12px rgba(139, 94, 60, 0.08);
+  --card-shadow-hover: 0 4px 20px rgba(139, 94, 60, 0.14);
+  --radius-sm: 12px;
+  --radius: 16px;
+  --radius-lg: 20px;
+  --radius-pill: 24px;
+  --safe-bottom: 34px;
+  --tab-h: 64px;
+  --nav-h: 44px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "SF Pro", sans-serif;
+  background: #F0EBE3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== Phone Frame ===== */
+.phone {
+  width: 390px;
+  height: 844px;
+  background: var(--cream);
+  border-radius: 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2), inset 0 0 0 2px #D4C4B0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Status Bar */
+.status-bar {
+  height: 44px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 28px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.status-bar .time { font-size: 14px; }
+.status-icons { display: flex; gap: 6px; align-items: center; }
+
+/* Screen Container */
+.screen {
+  height: calc(844px - 44px - var(--tab-h));
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0;
+}
+.screen::-webkit-scrollbar { width: 0; }
+
+/* ===== Screen Selector ===== */
+.screen-selector {
+  position: absolute;
+  top: 54px;
+  right: -60px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 10;
+}
+@media (max-width: 520px) {
+  .screen-selector {
+    top: auto;
+    bottom: 20px;
+    right: 10px;
+    flex-direction: row;
+  }
+}
+.screen-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.screen-btn:hover, .screen-btn.active {
+  background: var(--strawberry);
+  color: white;
+  border-color: var(--strawberry);
+}
+
+/* ===== Tab Bar ===== */
+.tab-bar {
+  height: var(--tab-h);
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: rgba(255,251,245,0.95);
+  backdrop-filter: blur(10px);
+  padding-bottom: 4px;
+}
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.tab-item.active { color: var(--caramel); }
+.tab-item .icon { font-size: 22px; }
+
+/* ===== Nav Bar ===== */
+.nav-bar {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+.nav-title { font-size: 17px; font-weight: 700; color: var(--text-primary); }
+.nav-right { display: flex; gap: 16px; font-size: 18px; color: var(--text-secondary); cursor: pointer; }
+.nav-back { font-size: 16px; color: var(--caramel); cursor: pointer; padding: 4px; }
+
+/* ===== CTA Button ===== */
+.cta-button {
+  margin: 12px 20px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, var(--butter), #F0C88A);
+  border-radius: var(--radius-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.cta-button:active { transform: scale(0.98); opacity: 0.9; }
+.cta-button .cta-text { font-size: 15px; font-weight: 600; color: var(--caramel); }
+.cta-button .cta-plus {
+  width: 32px; height: 32px;
+  background: var(--strawberry);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+}
+
+/* ===== Date Header ===== */
+.date-header {
+  padding: 16px 20px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.date-header .date { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.date-header .count { font-size: 12px; color: var(--text-secondary); }
+
+/* ===== Dessert Card ===== */
+.card-list { padding: 0 20px; }
+.dessert-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: var(--card-shadow);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.dessert-card:active { transform: scale(0.99); box-shadow: var(--card-shadow-hover); }
+.card-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  background: linear-gradient(135deg, #F5E6D0, #E8D5C0);
+}
+.card-tags {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.card-tag {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(6px);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--caramel);
+}
+.card-rating {
+  position: absolute;
+  bottom: 52px;
+  right: 12px;
+  font-size: 18px;
+  letter-spacing: 2px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(6px);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+.card-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+}
+.card-shop { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.card-price { font-size: 13px; color: var(--caramel); font-weight: 600; }
+.card-homemade { color: var(--matcha); }
+
+/* ===== Stats Page ===== */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 16px 20px;
+}
+.stat-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  box-shadow: var(--card-shadow);
+}
+.stat-card .stat-num { font-size: 28px; font-weight: 700; color: var(--caramel); }
+.stat-card .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 8px 20px 12px;
+}
+
+/* Donut Chart */
+.donut-section { padding: 0 20px; }
+.donut-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.donut-emoji { width: 28px; }
+.donut-bar {
+  flex: 1;
+  height: 8px;
+  background: #F0E8DE;
+  border-radius: 4px;
+  margin: 0 10px;
+  overflow: hidden;
+}
+.donut-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+/* ===== Record Flow ===== */
+.flow-container { padding: 16px 20px; }
+.flow-step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.flow-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.flow-dot.active { background: var(--strawberry); width: 28px; border-radius: 5px; }
+.flow-dot.done { background: var(--matcha); }
+
+/* Step 1: Camera */
+.camera-frame {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #3C2415, #5C3A25);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.camera-frame::after {
+  content: '';
+  position: absolute;
+  border: 3px solid rgba(255,255,255,0.4);
+  border-radius: 24px;
+  width: 90%; height: 90%;
+}
+.camera-frame .corner {
+  position: absolute;
+  width: 28px; height: 28px;
+  border-color: white;
+  border-style: solid;
+}
+.camera-frame .corner.tl { top: 12px; left: 12px; border-width: 3px 0 0 3px; border-radius: 6px 0 0 0; }
+.camera-frame .corner.tr { top: 12px; right: 12px; border-width: 3px 3px 0 0; border-radius: 0 6px 0 0; }
+.camera-frame .corner.bl { bottom: 12px; left: 12px; border-width: 0 0 3px 3px; border-radius: 0 0 0 6px; }
+.camera-frame .corner.br { bottom: 12px; right: 12px; border-width: 0 3px 3px 0; border-radius: 0 0 6px 0; }
+.camera-hint { color: rgba(255,255,255,0.6); font-size: 13px; z-index: 1; }
+
+.shutter-button {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--strawberry);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px auto 0;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(232,113,109,0.4);
+  transition: transform 0.15s;
+  font-size: 24px;
+}
+.shutter-button:active { transform: scale(0.95); }
+
+.album-link {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--caramel);
+  cursor: pointer;
+}
+
+/* Step 2: Rating */
+.rating-area {
+  text-align: center;
+  padding: 20px 0;
+}
+.rating-plate {
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, #FFF8F0, #F0E0D0);
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px;
+  box-shadow: 0 8px 30px rgba(139,94,60,0.1);
+  position: relative;
+  cursor: grab;
+}
+.rating-value { font-size: 36px; font-weight: 700; color: var(--caramel); }
+.rating-text { font-size: 14px; color: var(--text-secondary); margin-top: 8px; }
+
+/* Step 3: Tags */
+.tag-group { margin-bottom: 18px; }
+.tag-label { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag-pill {
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  background: white;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.tag-pill.selected {
+  background: var(--caramel);
+  color: white;
+  border-color: var(--caramel);
+}
+.tag-pill.ai-suggested {
+  border-color: var(--strawberry);
+  border-style: dashed;
+}
+.ai-hint {
+  text-align: center;
+  margin-top: 12px;
+  padding: 10px;
+  background: #FFF5F5;
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--strawberry);
+}
+
+/* Step 4: Form */
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: white;
+  transition: border-color 0.2s;
+}
+.form-input:focus { outline: none; border-color: var(--caramel); }
+.form-textarea { height: 56px; resize: none; }
+.toggle-row { display: flex; align-items: center; gap: 10px; }
+.toggle {
+  width: 48px; height: 28px;
+  background: var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+}
+.toggle.on { background: var(--strawberry); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 24px; height: 24px;
+  background: white;
+  border-radius: 50%;
+  top: 2px; left: 2px;
+  transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle.on::after { left: 22px; }
+
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--strawberry), #D4605E);
+  color: white;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.submit-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+/* ===== Detail Page ===== */
+.detail-img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+  background: linear-gradient(135deg, #F5E6D0, #E8D5C0);
+}
+.detail-rating {
+  text-align: center;
+  padding: 16px;
+  font-size: 28px;
+  letter-spacing: 3px;
+}
+.detail-rating-num { font-size: 32px; font-weight: 700; color: var(--caramel); }
+.detail-rating-text { font-size: 14px; color: var(--text-secondary); margin-top: 2px; }
+.detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 20px 16px;
+  justify-content: center;
+}
+.detail-tag {
+  padding: 6px 14px;
+  background: var(--butter);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  color: var(--caramel);
+  font-weight: 500;
+}
+.detail-info {
+  background: var(--card-bg);
+  margin: 0 20px 12px;
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--card-shadow);
+}
+.detail-info-row { font-size: 14px; color: var(--text-primary); line-height: 1.8; }
+.detail-note {
+  background: var(--card-bg);
+  margin: 0 20px 12px;
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--card-shadow);
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+.detail-time { text-align: center; font-size: 12px; color: var(--text-muted); padding: 8px 0; }
+.detail-actions {
+  display: flex;
+  gap: 12px;
+  padding: 0 20px 20px;
+}
+.detail-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+.detail-btn.share { background: var(--caramel); color: white; border: none; }
+.detail-btn.edit { background: white; color: var(--caramel); border: 1.5px solid var(--border); }
+.detail-btn.delete { background: white; color: var(--strawberry); border: 1.5px solid var(--border); }
+
+/* ===== Achievement Modal ===== */
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(60,36,21,0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  z-index: 20;
+  transition: opacity 0.3s;
+}
+.modal-overlay.hidden { opacity: 0; pointer-events: none; }
+.modal-card {
+  background: white;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 30px 24px 40px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  transform: translateY(0%);
+  transition: transform 0.3s ease;
+}
+.modal-overlay.hidden .modal-card { transform: translateY(100%); }
+.modal-badge { font-size: 48px; margin-bottom: 10px; }
+.modal-title { font-size: 20px; font-weight: 700; color: var(--caramel); margin-bottom: 6px; }
+.modal-sub { font-size: 15px; color: var(--text-primary); margin-bottom: 4px; }
+.modal-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+.modal-ok {
+  padding: 14px 60px;
+  background: var(--strawberry);
+  color: white;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  text-align: center;
+}
+.empty-icon { font-size: 64px; margin-bottom: 20px; }
+.empty-title { font-size: 18px; color: var(--text-primary); font-weight: 600; margin-bottom: 6px; line-height: 1.6; }
+.empty-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6; }
+.empty-btn {
+  padding: 14px 40px;
+  background: linear-gradient(135deg, var(--butter), #F0C88A);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--caramel);
+  cursor: pointer;
+}
+.empty-link { margin-top: 16px; font-size: 14px; color: var(--text-muted); cursor: pointer; }
+
+/* ===== Wishlist ===== */
+.wishlist-section { padding: 0 20px; }
+.wishlist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.wish-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.wish-icon { width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--cream); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.wish-info { flex: 1; }
+.wish-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.wish-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.wish-ate-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  background: var(--matcha);
+  color: white;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ===== Settings ===== */
+.setting-section {
+  padding: 6px 20px 16px;
+}
+.setting-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 8px;
+}
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-arrow { color: var(--text-muted); }
+
+/* ===== Edit Page ===== */
+.edit-photo {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  background: linear-gradient(135deg, #F5E6D0, #E8D5C0);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.edit-time-change {
+  font-size: 13px;
+  color: var(--strawberry);
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+/* ===== Flow nav buttons ===== */
+.flow-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+}
+.flow-back { font-size: 14px; color: var(--text-secondary); cursor: pointer; }
+.flow-next {
+  padding: 10px 28px;
+  background: var(--caramel);
+  color: white;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* ===== Card long-press menu (simplified) ===== */
+.card-menu {
+  position: absolute;
+  top: 40px;
+  right: 12px;
+  background: white;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 6px;
+  z-index: 5;
+  display: none;
+}
+.card-menu.show { display: block; }
+.card-menu-item {
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.card-menu-item:hover { background: var(--cream); }
+.card-menu-item.danger { color: var(--strawberry); }
+
+/* ===== ID badges for screens ===== */
+.screen-id {
+  position: absolute;
+  top: 12px;
+  left: 20px;
+  z-index: 15;
+  font-size: 11px;
+  background: rgba(255,255,255,0.8);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+/* ===== Notification Preview ===== */
+.notif-card {
+  margin: 20px;
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+  text-align: center;
+}
+.notif-header { font-size: 16px; font-weight: 600; color: var(--caramel); margin-bottom: 4px; }
+.notif-date { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.notif-stats { text-align: left; font-size: 14px; line-height: 2; color: var(--text-primary); }
+.notif-photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 12px 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.notif-photo {
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #F5E6D0, #E8D5C0);
+}
+
+/* animations */
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+@keyframes floatUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.anim-pop { animation: popIn 0.5s ease backwards; }
+.anim-float { animation: floatUp 0.5s ease backwards; }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="time">9:41</span>
+    <span class="status-icons"></span>
+  </div>
+
+  <!-- Screen Selector -->
+  <div class="screen-selector" id="screenSelector"></div>
+
+  <!-- Screens -->
+  <div class="screen" id="screenContent"></div>
+
+  <!-- Tab Bar (conditional) — 2 tabs only -->
+  <div class="tab-bar" id="tabBar">
+    <div class="tab-item active" data-tab="journal">
+      <span class="icon">📖</span> 手账
+    </div>
+    <div class="tab-item" data-tab="stats">
+      <span class="icon">📊</span> 统计
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== Screen Manager =====
+const screens = {
+  home: { title: '首页·手账', tabs: true },
+  calendar: { title: '日历月视图', tabs: true },
+  stats: { title: '统计', tabs: true },
+  record1: { title: '拍照', tabs: false },
+  record2: { title: '勺子打分', tabs: false },
+  record3: { title: '风味标签', tabs: false },
+  record4: { title: '补充信息', tabs: false },
+  detail: { title: '详情', tabs: false },
+  wishlist: { title: '想吃清单', tabs: true },
+  settings: { title: '设置', tabs: false },
+  edit: { title: '编辑', tabs: false },
+  empty: { title: '空白手账', tabs: true },
+  notif: { title: '每周总结', tabs: false },
+};
+
+let currentScreen = 'home';
+let selectedTags = { sweetness: '适中', texture: [], flavor: [], temperature: '冷藏' };
+let ratingValue = 3.5;
+let isHomemade = false;
+
+// Build screen selector buttons
+const selector = document.getElementById('screenSelector');
+Object.keys(screens).forEach(key => {
+  const btn = document.createElement('div');
+  btn.className = 'screen-btn' + (key === 'home' ? ' active' : '');
+  btn.textContent = key === 'home' ? '1' : key === 'calendar' ? '1A' : key === 'stats' ? '2' : key === 'record1' ? '3a' : key === 'record2' ? '3b' : key === 'record3' ? '3c' : key === 'record4' ? '3d' : key === 'detail' ? '4' : key === 'empty' ? '0' : key === 'edit' ? '8' : key === 'notif' ? '9' : key === 'wishlist' ? 'W' : 'S';
+  btn.onclick = () => navigateTo(key);
+  selector.appendChild(btn);
+});
+
+function navigateTo(screen) {
+  currentScreen = screen;
+  document.querySelectorAll('.screen-btn').forEach(b => b.classList.remove('active'));
+  const idx = Object.keys(screens).indexOf(screen);
+  if (idx >= 0) document.querySelectorAll('.screen-btn')[idx].classList.add('active');
+  renderScreen();
+  document.getElementById('screenContent').scrollTop = 0;
+}
+
+function renderScreen() {
+  const container = document.getElementById('screenContent');
+  const tabBar = document.getElementById('tabBar');
+  const cfg = screens[currentScreen];
+
+  tabBar.style.display = cfg.tabs ? 'flex' : 'none';
+
+  // Adjust screen height when tab bar is hidden
+  if (cfg.tabs) {
+    container.style.height = 'calc(844px - 44px - 64px)';
+  } else {
+    container.style.height = 'calc(844px - 44px)';
+  }
+
+  switch(currentScreen) {
+    case 'home': renderHome(container); break;
+    case 'calendar': renderCalendar(container); break;
+    case 'stats': renderStats(container); break;
+    case 'record1': renderRecordStep1(container); break;
+    case 'record2': renderRecordStep2(container); break;
+    case 'record3': renderRecordStep3(container); break;
+    case 'record4': renderRecordStep4(container); break;
+    case 'detail': renderDetail(container); break;
+    case 'wishlist': renderWishlist(container); break;
+    case 'settings': renderSettings(container); break;
+    case 'edit': renderEdit(container); break;
+    case 'empty': renderEmpty(container); break;
+    case 'notif': renderNotif(container); break;
+  }
+}
+
+// Tab bar — only 2 tabs: journal + stats
+document.querySelectorAll('.tab-item').forEach(item => {
+  item.addEventListener('click', function() {
+    const tab = this.dataset.tab;
+    const map = { journal: 'home', stats: 'stats' };
+    if (map[tab]) navigateTo(map[tab]);
+  });
+});
+
+// ===== SCREEN RENDERERS =====
+
+function renderHome(container) {
+  container.innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-title">糖记</span>
+      <span class="nav-right">
+        <span onclick="showAchievement()">🎉</span>
+        <span onclick="navigateTo('settings')">⚙️</span>
+      </span>
+    </div>
+    <div class="cta-button" onclick="navigateTo('record1')">
+      <span class="cta-text">📸 记录今天吃了什么</span>
+      <span class="cta-plus">＋</span>
+    </div>
+
+    <div class="date-header">
+      <span class="date">5月14日 周四</span>
+      <span class="count">3块 🥄</span>
+    </div>
+
+    <div class="card-list">
+      <div class="dessert-card" onclick="navigateTo('detail')" oncontextmenu="event.preventDefault();toggleMenu(this)" style="position:relative;">
+        <div class="card-tags"><span class="card-tag">抹茶</span><span class="card-tag">绵密</span></div>
+        <div class="card-img" style="background:linear-gradient(135deg,#C8E6C9,#A5D6A7);display:flex;align-items:center;justify-content:center;font-size:60px;">🍵</div>
+        <div class="card-rating">🥄🥄🥄🥄</div>
+        <div class="card-info"><span class="card-shop">📍 辻利茶铺</span><span class="card-price">¥38</span></div>
+        <div class="card-menu" id="cardMenu1"><div class="card-menu-item">✏️ 编辑</div><div class="card-menu-item danger">🗑️ 删除</div><div class="card-menu-item">🔄 再来一块</div></div>
+      </div>
+
+      <div class="dessert-card" style="position:relative;">
+        <div class="card-tags"><span class="card-tag">可可</span><span class="card-tag">流心</span></div>
+        <div class="card-img" style="background:linear-gradient(135deg,#D7CCC8,#BCAAA4);display:flex;align-items:center;justify-content:center;font-size:60px;">🍫</div>
+        <div class="card-rating">🥄🥄🥄</div>
+        <div class="card-info"><span class="card-shop card-homemade">🏠 自制</span><span class="card-price">—</span></div>
+      </div>
+    </div>
+
+    <div class="date-header">
+      <span class="date">5月12日 周一</span>
+      <span class="count">1块 🥄</span>
+    </div>
+
+    <div class="card-list">
+      <div class="dessert-card">
+        <div class="card-tags"><span class="card-tag">芝士</span><span class="card-tag">轻盈</span></div>
+        <div class="card-img" style="background:linear-gradient(135deg,#FFF9C4,#FFF176);display:flex;align-items:center;justify-content:center;font-size:60px;">🧀</div>
+        <div class="card-rating">🥄🥄🥄🥄🥄</div>
+        <div class="card-info"><span class="card-shop">📍 LADY M</span><span class="card-price">¥75</span></div>
+      </div>
+    </div>
+    <div style="height:16px;"></div>
+  `;
+}
+
+function renderCalendar(container) {
+  container.innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-back" onclick="navigateTo('home')">← 返回</span>
+      <span class="nav-title">2026年5月</span>
+      <span class="nav-right" style="font-size:13px;font-weight:500;color:var(--caramel);" onclick="navigateTo('home')">列表 →</span>
+    </div>
+    <div style="padding:0 20px;">
+      <table style="width:100%;text-align:center;border-collapse:collapse;">
+        <tr style="color:var(--text-muted);font-size:12px;">
+          <td style="padding:8px 0;">一</td><td style="padding:8px 0;">二</td><td style="padding:8px 0;">三</td><td style="padding:8px 0;">四</td><td style="padding:8px 0;">五</td><td style="padding:8px 0;">六</td><td style="padding:8px 0;">日</td>
+        </tr>
+        ${(() => {
+          let html = '';
+          const daysInMonth = 31;
+          let day = 1;
+          let weekStart = 4; // Friday (Mon=0)
+          for (let w = 0; w < 6; w++) {
+            html += '<tr>';
+            for (let d = 0; d < 7; d++) {
+              if ((w === 0 && d < weekStart) || day > daysInMonth) {
+                html += '<td style="padding:10px 0;color:var(--text-muted);font-size:14px;"></td>';
+              } else {
+                const isToday = day === 14;
+                const hasRecord = [12, 14, 15, 18, 22, 29].includes(day);
+                const highScore = [14, 22].includes(day);
+                html += '<td style="padding:6px 0;font-size:14px;position:relative;cursor:pointer;' + (isToday?'font-weight:700;':'') + '">';
+                if (isToday) html += '<span style="display:inline-block;width:32px;height:32px;line-height:32px;background:var(--caramel);color:white;border-radius:50%;">14</span>';
+                else html += day;
+                if (hasRecord) html += '<span style="display:block;width:'+(highScore?'8':'5')+'px;height:'+(highScore?'8':'5')+'px;background:'+(highScore?'var(--strawberry)':'var(--caramel)')+';border-radius:50%;margin:2px auto 0;"></span>';
+                html += '</td>';
+                day++;
+              }
+            }
+            html += '</tr>';
+            if (day > daysInMonth) break;
+          }
+          return html;
+        })()}
+      </table>
+    </div>
+    <div style="margin:20px;padding:16px;background:white;border-radius:16px;box-shadow:0 2px 12px rgba(139,94,60,0.08);">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">── 选中 5月14日 ──</div>
+      <div style="font-size:14px;color:var(--text-primary);">当天吃了 <strong>3</strong> 块 · 平均 <strong>🥄3.8</strong></div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <div style="width:48px;height:48px;background:linear-gradient(135deg,#C8E6C9,#A5D6A7);border-radius:8px;"></div>
+        <div style="width:48px;height:48px;background:linear-gradient(135deg,#D7CCC8,#BCAAA4);border-radius:8px;"></div>
+        <div style="width:48px;height:48px;background:linear-gradient(135deg,#F8BBD0,#F48FB1);border-radius:8px;"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderStats(container) {
+  container.innerHTML = `
+    <div class="nav-bar"><span class="nav-title">统计</span></div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num">12</div><div class="stat-label">本月 · 块甜品</div></div>
+      <div class="stat-card"><div class="stat-num">247</div><div class="stat-label">总计 · 块甜品</div></div>
+      <div class="stat-card"><div class="stat-num">¥386</div><div class="stat-label">本月花费</div></div>
+      <div class="stat-card"><div class="stat-num">¥8,412</div><div class="stat-label">总计花费</div></div>
+    </div>
+    <div class="section-title">── 类型分布 ──</div>
+    <div class="donut-section">
+      ${[
+        {emoji:'🍰',name:'蛋糕',pct:42,color:'var(--strawberry)'},
+        {emoji:'🍦',name:'冰淇淋',pct:22,color:'var(--matcha)'},
+        {emoji:'🧁',name:'泡芙',pct:15,color:'var(--butter)'},
+        {emoji:'🍮',name:'布丁',pct:8,color:'var(--caramel)'},
+        {emoji:'🍩',name:'其他',pct:13,color:'var(--text-muted)'},
+      ].map(d => `
+        <div class="donut-row">
+          <span class="donut-emoji">${d.emoji}</span>${d.name}
+          <div class="donut-bar"><div class="donut-fill" style="width:${d.pct}%;background:${d.color};"></div></div>
+          ${d.pct}%
+        </div>`).join('')}
+    </div>
+    <div class="section-title">── 口味偏好 ──</div>
+    <div class="donut-section">
+      ${[
+        {name:'抹茶',pct:62,color:'var(--matcha)'},
+        {name:'可可',pct:38,color:'#6D4C41'},
+        {name:'果味',pct:28,color:'var(--strawberry)'},
+        {name:'芝士',pct:18,color:'var(--butter)'},
+      ].map(d => `
+        <div class="donut-row">
+          <span style="width:40px;font-size:13px;">${d.name}</span>
+          <div class="donut-bar"><div class="donut-fill" style="width:${d.pct}%;background:${d.color};"></div></div>
+          <span style="font-size:13px;color:var(--text-secondary);">${d.pct}%</span>
+        </div>`).join('')}
+    </div>
+      <div style="padding:8px 20px;cursor:pointer;font-size:14px;color:var(--strawberry);" onclick="navigateTo('wishlist')">📋 想吃清单 →</div>
+  `;
+}
+
+function renderRecordStep1(container) {
+  container.innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-back" onclick="navigateTo('home')">✕ 取消</span>
+      <span class="nav-title">拍摄</span>
+      <span style="font-size:12px;color:var(--text-muted);">1/4</span>
+    </div>
+    <div class="flow-container">
+      <div class="flow-step-indicator">
+        <div class="flow-dot active"></div><div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div>
+      </div>
+      <div class="camera-frame">
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+      </div>
+      <div class="shutter-button" onclick="navigateTo('record2')">📷</div>
+      <div class="album-link" onclick="navigateTo('record2')">从相册选择</div>
+    </div>
+  `;
+}
+
+function renderRecordStep2(container) {
+  container.innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-back" onclick="navigateTo('record1')">← 返回</span>
+      <span style="font-size:12px;color:var(--text-muted);">2/4</span>
+    </div>
+    <div class="flow-container">
+      <div class="flow-step-indicator">
+        <div class="flow-dot done"></div><div class="flow-dot active"></div><div class="flow-dot"></div><div class="flow-dot"></div>
+      </div>
+      <div style="width:120px;height:80px;background:linear-gradient(135deg,#C8E6C9,#A5D6A7);border-radius:12px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:30px;">🍵</div>
+      <div class="rating-area">
+        <div class="rating-plate" id="ratingPlate">
+          <span style="font-size:50px;">🍰</span>
+        </div>
+        <div class="rating-value" id="ratingDisplay">${ratingValue} 勺</div>
+        <div class="rating-text" id="ratingText">好吃的！</div>
+        <div style="margin-top:12px;">
+          <span style="font-size:14px;color:var(--text-muted);">← 拖动勺子调整 →</span>
+        </div>
+        <input type="range" min="0.5" max="5" step="0.5" value="${ratingValue}" style="width:80%;margin-top:16px;accent-color:var(--strawberry);"
+          oninput="ratingValue=this.value;document.getElementById('ratingDisplay').textContent=ratingValue+' 勺';
+          const texts={0.5:'就尝了一小口',1.5:'还可以',2.5:'还行吧',3.5:'好吃的！',4.5:'非常好吃！',5.0:'此物只应天上有'};
+          document.getElementById('ratingText').textContent=texts[ratingValue]||'还不错';">
+      </div>
+      <div class="flow-nav">
+        <span></span>
+        <button class="flow-next" onclick="navigateTo('record3')">下一步 →</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderRecordStep3(container) {
+  const tg = (label, options, key, multi) => `
+    <div class="tag-group">
+      <div class="tag-label">${label}${multi?'<span style="font-weight:400;color:var(--text-muted);">（可多选）</span>':''}</div>
+      <div class="tag-row">
+        ${options.map(o => {
+          const sel = multi ? selectedTags[key].includes(o) : selectedTags[key] === o;
+          return '<span class="tag-pill'+(sel?' selected':'')+(key==='flavor'&&['抹茶','可可'].includes(o)&&!sel?' ai-suggested':'')+'\" onclick=\"toggleTag(\''+key+'\',\''+o+'\','+multi+')\">'+o+'</span>';
+        }).join('')}
+      </div>
+    </div>`;
+
+  container.innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-back" onclick="navigateTo('record2')">← 返回</span>
+      <span style="font-size:12px;color:var(--text-muted);">3/4</span>
+    </div>
+    <div class="flow-container">
+      <div class="flow-step-indicator">
+        <div class="flow-dot done"></div><div class="flow-dot done"></div><div class="flow-dot active"></div><div class="flow-dot"></div>
+      </div>
+      ${tg('甜度',['微甜','适中','浓郁','齁甜'],'sweetness',false)}
+      ${tg('口感',['绵密','轻盈','酥脆','Q弹','拉丝','流心','冰沙','松软'],'texture',true)}
+      ${tg('风味',['抹茶','可可','咖啡','果味','花香','酒香','芝士','坚果','焦糖','椰香','茶味','豆乳'],'flavor',true)}
+      ${tg('温度',['常温','冷藏','热食','冰品'],'temperature',false)}
+      <div class="ai-hint">AI 猜测：抹茶千层，对的吗？ <span style="margin-left:12px;cursor:pointer;color:var(--matcha);">[对的 ✓]</span> <span style="cursor:pointer;color:var(--text-muted);">[我改 ✎]</span></div>
+      <div class="flow-nav" style="justify-content:flex-end;">
+        <button class="flow-next" onclick="navigateTo('record4')">下一步 →</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderRecordStep4(container) {
+  container.innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-back" onclick="navigateTo('record3')">← 返回</span>
+      <span style="font-size:12px;color:var(--text-muted);">4/4</span>
+    </div>
+    <div class="flow-container" style="padding-bottom:30px;">
+      <div class="flow-step-indicator">
+        <div class="flow-dot done"></div><div class="flow-dot done"></div><div class="flow-dot done"></div><div class="flow-dot active"></div>
+      </div>
+      <div class="form-group"><div class="form-label">店名</div><input class="form-input" placeholder="输入店铺名称" value="辻利茶铺"></div>
+      <div class="form-group"><div class="form-label">地址（选填）</div><input class="form-input" placeholder="手动输入地址" value="📍 静安寺路 168 号" style="color:var(--caramel);"></div>
+      <div class="form-group"><div class="form-label" style="display:flex;align-items:center;gap:12px;">价格 <span class="toggle-row" style="font-weight:400;font-size:12px;">🏠 这是我做的 <span class="toggle${isHomemade?' on':''}" id="homemadeToggle" onclick="isHomemade=!isHomemade;this.classList.toggle('on',isHomemade);"></span></span></div><input class="form-input" placeholder="¥" value="¥ 38"></div>
+      <div class="form-group"><div class="form-label">备注</div><textarea class="form-input form-textarea" placeholder="一句话记录感受…">抹茶味超浓，配焙茶刚好</textarea></div>
+      <button class="submit-btn" onclick="showSubmitFeedback()">✨ 完成记录</button>
+    </div>
+  `;
+}
+
+function renderDetail(container) {
+  container.innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-back" onclick="navigateTo('home')">← 手账</span>
+      <span style="font-size:18px;cursor:pointer;">⋯</span>
+    </div>
+    <div class="detail-img" style="background:linear-gradient(135deg,#C8E6C9,#A5D6A7);display:flex;align-items:center;justify-content:center;font-size:80px;">🍵</div>
+    <div class="detail-rating">
+      <div style="font-size:32px;">🥄🥄🥄🥄</div>
+      <div class="detail-rating-num">4.0 勺</div>
+      <div class="detail-rating-text">"非常好吃！"</div>
+    </div>
+    <div class="detail-tags">
+      <span class="detail-tag">适中</span><span class="detail-tag">绵密</span><span class="detail-tag">抹茶</span><span class="detail-tag">冷藏</span>
+    </div>
+    <div class="detail-info">
+      <div class="detail-info-row">📍 辻利茶铺</div>
+      <div class="detail-info-row" style="color:var(--text-secondary);">静安区静安寺路 168 号</div>
+      <div class="detail-info-row" style="color:var(--caramel);font-weight:600;">¥ 38</div>
+    </div>
+    <div class="detail-note">💬 抹茶味超浓，配焙茶刚好</div>
+    <div class="detail-time">2026年5月14日 15:32</div>
+    <div class="detail-actions">
+      <button class="detail-btn share">📸 生成分享卡片</button>
+      <button class="detail-btn edit" onclick="navigateTo('edit')">✏️ 编辑</button>
+      <button class="detail-btn delete">🗑️ 删除</button>
+    </div>
+  `;
+}
+
+function renderWishlist(container) {
+  container.innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-back" onclick="navigateTo('stats')">← 统计</span>
+      <span class="nav-title">想吃清单</span>
+      <span style="font-size:20px;color:var(--caramel);cursor:pointer;">✚</span>
+    </div>
+    <div style="padding:12px 20px;">
+      <div class="wishlist-header">还没吃到的</div>
+      <div class="wish-card">
+        <div class="wish-icon" style="background:linear-gradient(135deg,#FFF9C4,#FFE082);">🍰</div>
+        <div class="wish-info"><div class="wish-name">巴斯克芝士蛋糕</div><div class="wish-meta">📍 听说 xx 路那家很绝 · 收藏于5月10日</div></div>
+        <button class="wish-ate-btn" onclick="navigateTo('record1')">我吃了 ✓</button>
+      </div>
+      <div class="wish-card">
+        <div class="wish-icon">🍦</div>
+        <div class="wish-info"><div class="wish-name">茅台冰淇淋</div><div class="wish-meta">📍 想试试看 · 收藏于4月28日</div></div>
+        <button class="wish-ate-btn" onclick="navigateTo('record1')">我吃了 ✓</button>
+      </div>
+      <div class="wishlist-header" style="color:var(--matcha);">── 吃到了 ──</div>
+      <div style="font-size:14px;color:var(--text-secondary);padding:8px 0;">✓ 杨枝甘露 · 已记录于 5月8日</div>
+    </div>
+  `;
+}
+
+function renderSettings(container) {
+  container.innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-back" onclick="navigateTo('home')">← 手账</span>
+      <span class="nav-title">设置</span>
+    </div>
+    <div class="setting-section">
+      <div class="setting-section-title">数据</div>
+      <div class="setting-row">导出所有记录 (JSON) <span class="setting-arrow">›</span></div>
+      <div class="setting-row">导出为 Markdown <span class="setting-arrow">›</span></div>
+      <div class="setting-row">导出照片合集 (ZIP) <span class="setting-arrow">›</span></div>
+      <div class="setting-row">iCloud 同步 <span class="toggle on"></span></div>
+    </div>
+    <div class="setting-section">
+      <div class="setting-section-title">显示</div>
+      <div class="setting-row">首页布局 <span style="color:var(--caramel);">列表</span></div>
+      <div class="setting-row">启动时显示 <span style="color:var(--caramel);">手账</span></div>
+      <div class="setting-row">应用图标 <span style="color:var(--caramel);">默认</span></div>
+    </div>
+    <div class="setting-section">
+      <div class="setting-section-title">记录偏好</div>
+      <div class="setting-row">默认温度 <span style="color:var(--text-muted);">不预设</span></div>
+      <div class="setting-row">显示价格字段 <span class="toggle on"></span></div>
+    </div>
+    <div class="setting-section">
+      <div class="setting-section-title">提醒</div>
+      <div class="setting-row">每周甜品总结 <span class="toggle on"></span></div>
+    </div>
+    <div class="setting-section" style="text-align:center;padding-top:20px;">
+      <div style="font-size:14px;color:var(--caramel);font-weight:600;">糖记 v1.0.0</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">一块蛋糕就是一份快乐</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">隐私：所有数据仅存储于你的设备</div>
+    </div>
+  `;
+}
+
+function renderEdit(container) {
+  container.innerHTML = `
+    <div class="nav-bar">
+      <span class="nav-back" onclick="navigateTo('detail')">✕ 取消</span>
+      <span class="nav-title">编辑</span>
+      <span style="font-size:14px;color:var(--matcha);font-weight:600;cursor:pointer;">保存 ✓</span>
+    </div>
+    <div style="padding:16px 20px;">
+      <div class="edit-photo" style="background:linear-gradient(135deg,#C8E6C9,#A5D6A7);display:flex;align-items:center;justify-content:center;font-size:50px;">🍵</div>
+      <div style="padding:16px 0;font-size:18px;text-align:center;">评分 🥄🥄🥄🥄 <span style="font-size:12px;color:var(--text-muted);">(可拖动调整)</span></div>
+      <div class="form-group"><div class="form-label">店名</div><input class="form-input" value="辻利茶铺"></div>
+      <div class="form-group"><div class="form-label">地址（选填）</div><input class="form-input" value="静安区静安寺路 168 号"></div>
+      <div class="form-group"><div class="form-label">价格</div><input class="form-input" value="¥ 38"></div>
+      <div class="form-group"><div class="form-label">备注</div><textarea class="form-input form-textarea">抹茶味超浓，配焙茶刚好</textarea></div>
+      <div class="form-group"><div class="form-label">记录时间 <span class="edit-time-change">[修改]</span></div><div style="font-size:14px;color:var(--text-primary);">2026-05-14 15:32</div></div>
+    </div>
+  `;
+}
+
+function renderEmpty(container) {
+  container.innerHTML = `
+    <div class="nav-bar"><span class="nav-title">糖记</span></div>
+    <div class="empty-state">
+      <div class="empty-icon">🍨</div>
+      <div class="empty-title">还没有记录</div>
+      <div class="empty-sub">你的第一块甜品<br>正在等你</div>
+      <button class="empty-btn" onclick="navigateTo('record1')">✨ 记录今天第一块</button>
+      <div class="empty-link">从相册导入以前的照片</div>
+    </div>
+  `;
+}
+
+function renderNotif(container) {
+  container.innerHTML = `
+    <div style="padding:30px 20px 0;">
+      <div class="notif-card">
+        <div class="notif-header">糖记 · 本周甜度报告</div>
+        <div class="notif-date">5月11日 - 5月14日</div>
+        <div class="notif-stats">
+          这周吃了 <strong>4</strong> 块甜品<br>
+          花了 <strong>¥156</strong><br>
+          最高分 <strong>🥄4.5</strong>（巴斯克）<br>
+          本周最爱口味：<strong>抹茶</strong>
+        </div>
+        <div class="notif-photos">
+          <div class="notif-photo" style="background:linear-gradient(135deg,#C8E6C9,#A5D6A7);"></div>
+          <div class="notif-photo" style="background:linear-gradient(135deg,#D7CCC8,#BCAAA4);"></div>
+          <div class="notif-photo" style="background:linear-gradient(135deg,#FFF9C4,#FFE082);"></div>
+          <div class="notif-photo" style="background:linear-gradient(135deg,#F8BBD0,#F48FB1);"></div>
+        </div>
+        <button class="empty-btn" style="margin-top:12px;" onclick="navigateTo('home')">打开糖记 →</button>
+      </div>
+    </div>
+  `;
+}
+
+// ===== Helpers =====
+function toggleTag(key, val, multi) {
+  if (multi) {
+    const idx = selectedTags[key].indexOf(val);
+    if (idx >= 0) selectedTags[key].splice(idx, 1);
+    else selectedTags[key].push(val);
+  } else {
+    selectedTags[key] = val;
+  }
+  renderScreen();
+}
+
+function toggleMenu(card) {
+  const menu = card.querySelector('.card-menu');
+  document.querySelectorAll('.card-menu').forEach(m => { if (m !== menu) m.classList.remove('show'); });
+  menu.classList.toggle('show');
+  event.stopPropagation();
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.card-menu').forEach(m => m.classList.remove('show'));
+});
+
+function showAchievement() {
+  const phone = document.getElementById('phone');
+  let modal = document.getElementById('achievementModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'achievementModal';
+    modal.className = 'modal-overlay hidden';
+    modal.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-badge">🏅</div>
+        <div style="font-size:18px;font-weight:700;color:var(--strawberry);margin-bottom:4px;">新成就解锁！</div>
+        <div class="modal-sub">蛋糕达人</div>
+        <div class="modal-desc">你已品尝 50 种不同的蛋糕！</div>
+        <button class="modal-ok" onclick="document.getElementById('achievementModal').classList.add('hidden')">👍 好的</button>
+      </div>`;
+    phone.appendChild(modal);
+  }
+  modal.classList.remove('hidden');
+}
+
+function showSubmitFeedback() {
+  const phone = document.getElementById('phone');
+  let fb = document.getElementById('submitFeedback');
+  if (!fb) {
+    fb = document.createElement('div');
+    fb.id = 'submitFeedback';
+    fb.style.cssText = 'position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;pointer-events:none;';
+    fb.innerHTML = '<div style="background:var(--caramel);color:white;padding:20px 40px;border-radius:20px;font-size:18px;font-weight:600;animation:popIn 0.4s ease;box-shadow:0 8px 30px rgba(139,94,60,0.3);">🥄 第 248 块甜品已入册</div>';
+    phone.appendChild(fb);
+  }
+  fb.style.opacity = '1';
+  fb.querySelector('div').style.animation = 'none';
+  void fb.offsetWidth;
+  fb.querySelector('div').style.animation = 'popIn 0.4s ease';
+
+  setTimeout(() => {
+    fb.style.opacity = '0';
+    fb.style.transition = 'opacity 0.3s';
+    setTimeout(() => navigateTo('home'), 300);
+  }, 1500);
+}
+
+// ===== Init =====
+navigateTo('home');
+</script>
+
+</body>
+</html>
