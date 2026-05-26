@@ -32,10 +32,10 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
       style={{ transform: `rotate(${rot}deg)` }}
       className="bg-card-bg rounded-lg overflow-hidden mb-5 cursor-pointer relative transition-all duration-200 hover:scale-[1.01] shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]"
     >
-      {/* 三条粉色竖向胶带（中间） */}
-      <div className="absolute -top-0.5 left-1/2 -translate-x-[15px] w-[3px] h-9 bg-pink-300/60 z-0 rounded-sm" />
-      <div className="absolute -top-0.5 left-1/2 -translate-x-0 w-[3px] h-9 bg-pink-300/60 z-0 rounded-sm" />
-      <div className="absolute -top-0.5 left-1/2 -translate-x-[-15px] w-[3px] h-9 bg-pink-300/60 z-0 rounded-sm" />
+      {/* 三条粉色竖向胶带（中间，微微倾斜） */}
+      <div className="absolute -top-2 left-1/2 -translate-x-[18px] w-[5px] h-10 bg-pink-300/60 z-0 rounded-sm rotate-[-4deg]" />
+      <div className="absolute -top-2.5 left-1/2 -translate-x-0 w-[5px] h-11 bg-pink-300/60 z-0 rounded-sm rotate-[2deg]" />
+      <div className="absolute -top-1.5 left-1/2 translate-x-[18px] w-[5px] h-9 bg-pink-300/60 z-0 rounded-sm rotate-[6deg]" />
 
       {/* Image */}
       <div
