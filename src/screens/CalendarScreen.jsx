@@ -121,7 +121,7 @@ export default function CalendarScreen({ records, navigateTo }) {
         </table>
       </div>
 
-      {/* Selected day summary */}
+      {/* Selected day summary with photo thumbnails */}
       <div className="mx-5 mt-5 p-4 bg-white rounded shadow-card">
         <div className="text-[13px] text-text-muted mb-2">
           ── 选中 {viewMonth}月{selectedDay}日 ──
