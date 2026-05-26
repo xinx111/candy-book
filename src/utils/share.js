@@ -149,11 +149,11 @@ export async function generateShareCard(record, aiNote) {
       ctx.textAlign = 'left'
       tagX += tw + 10
     }
-    nextY = tagY + 50
+    nextY = tagY + 36
   }
 
   // ── 分隔线 ──
-  const dividerY = nextY + 4
+  const dividerY = nextY
   ctx.strokeStyle = '#F5E0E0'
   ctx.lineWidth = 1
   ctx.beginPath()
