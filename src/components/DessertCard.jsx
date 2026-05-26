@@ -32,9 +32,11 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
       style={{ transform: `rotate(${rot}deg)` }}
       className="bg-card-bg rounded-lg overflow-hidden mb-5 cursor-pointer relative transition-all duration-200 hover:scale-[1.01] shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]"
     >
-      {/* 图钉 */}
-      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-4 h-4 bg-pink-300 rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.15)] z-10 flex items-center justify-center">
-        <div className="w-1.5 h-1.5 bg-white/80 rounded-full" />
+      {/* 立体图钉（倾斜） */}
+      <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 z-10 rotate-[-15deg]" style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.2))' }}>
+        <div className="w-[13px] h-[15px] rounded-full bg-gradient-to-b from-pink-200 to-pink-400 relative">
+          <div className="absolute top-[2px] left-[3px] w-[3px] h-[3px] bg-white/60 rounded-full" />
+        </div>
       </div>
 
       {/* Image */}
