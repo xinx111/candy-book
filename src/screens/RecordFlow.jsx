@@ -88,42 +88,6 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
       .map(([name]) => name)
   }, [records])
 
-  // 从历史记录中提取自定义风味/口感（不在预设列表中的）
-  const PRESET_FLAVORS = ['抹茶', '可可', '咖啡', '果味', '花香', '酒香', '芝士', '坚果', '焦糖', '椰香', '茶味', '豆乳']
-  const PRESET_TEXTURES = ['绵密', '轻盈', '酥脆', 'Q弹', '拉丝', '流心', '冰沙', '松软']
-  const PRESET_TOPPINGS = ['珍珠', '椰果', '布丁', '芋泥', '西米露', '仙草', '脆波波']
-  const PRESET_ICE_TEXTURES = ['绵密', '清爽', '沙沙', '浓郁', 'Q弹', '香甜', '冰爽', '爆浆']
-
-  const HISTORIC_MAX = 15
-
-  const historicFlavors = useMemo(() => {
-    const allPreset = new Set(PRESET_FLAVORS)
-    const counts = {}
-    for (const r of records) {
-      for (const f of r.flavor || []) {
-        if (!allPreset.has(f)) counts[f] = (counts[f] || 0) + 1
-      }
-    }
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, HISTORIC_MAX)
-      .map(([name]) => name)
-  }, [records])
-
-  const historicTextures = useMemo(() => {
-    const allPreset = new Set([...PRESET_TEXTURES, ...PRESET_TOPPINGS, ...PRESET_ICE_TEXTURES])
-    const counts = {}
-    for (const r of records) {
-      for (const t of r.texture || []) {
-        if (!allPreset.has(t)) counts[t] = (counts[t] || 0) + 1
-      }
-    }
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, HISTORIC_MAX)
-      .map(([name]) => name)
-  }, [records])
-
   const recognizeDessert = async (imageDataUrl) => {
     setAiLoading(true)
     setAiError(null)
