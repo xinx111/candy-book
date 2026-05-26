@@ -185,8 +185,8 @@ export async function generateShareCard(record, aiNote) {
     nextY += 26
   }
 
-  // ── AI 文案 ──
-  const displayNote = aiNote || note
+  // ── 文案（优先显示用户备注，没有则用 AI 生成的）──
+  const displayNote = note || aiNote
   if (displayNote) {
     ctx.font = '15px sans-serif'
     ctx.fillStyle = COLORS.textSec

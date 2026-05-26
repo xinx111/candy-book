@@ -13,6 +13,8 @@ export default function DetailScreen({ params, navigateTo, goBack, loadRecords }
   const [record, setRecord] = useState(null)
   const [loading, setLoading] = useState(true)
   const [sharing, setSharing] = useState(false)
+  const [previewCanvas, setPreviewCanvas] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
 
   useEffect(() => {
     if (!params?.id) {
@@ -55,13 +57,26 @@ export default function DetailScreen({ params, navigateTo, goBack, loadRecords }
   const handleShare = async () => {
     setSharing(true)
     try {
-      const aiNote = await generateAiCopy(record)
+      const aiNote = record.note ? '' : await generateAiCopy(record)
       const canvas = await generateShareCard(record, aiNote)
-      await shareCard(canvas)
+      const url = canvas.toDataURL('image/png')
+      setPreviewCanvas(canvas)
+      setPreviewUrl(url)
     } catch (e) {
       alert('生成分享卡片失败: ' + e.message)
     }
     setSharing(false)
+  }
+
+  const handleConfirmShare = async () => {
+    if (!previewCanvas) return
+    try {
+      await shareCard(previewCanvas)
+    } catch (e) {
+      alert('分享失败: ' + e.message)
+    }
+    setPreviewCanvas(null)
+    setPreviewUrl(null)
   }
 
   const { image_path, rating, sweetness, texture, flavor, temperature, shop_name, name, location, price, note, is_homemade, created_at, category } = record
@@ -178,6 +193,24 @@ export default function DetailScreen({ params, navigateTo, goBack, loadRecords }
           🗑️ 删除
         </button>
       </div>
+      {/* Share preview modal */}
+      {previewUrl && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-5" onClick={() => { setPreviewUrl(null); setPreviewCanvas(null) }}>
+          <div className="bg-white rounded-xl overflow-hidden max-h-[90vh] flex flex-col shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="overflow-y-auto p-4 flex-shrink-0">
+              <img src={previewUrl} alt="分享卡片预览" className="w-[300px] h-auto rounded-lg shadow" />
+            </div>
+            <div className="flex gap-3 px-4 pb-4">
+              <button className="flex-1 py-2.5 bg-caramel text-white rounded-pill text-sm font-semibold" onClick={handleConfirmShare}>
+                📤 分享
+              </button>
+              <button className="flex-1 py-2.5 bg-white text-text-secondary border border-border rounded-pill text-sm" onClick={() => { setPreviewUrl(null); setPreviewCanvas(null) }}>
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

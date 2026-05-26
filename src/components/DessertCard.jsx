@@ -7,7 +7,7 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
   const rot = (() => {
     let h = 0
     for (const c of (id || '')) h = ((h << 5) - h) + c.charCodeAt(0)
-    return ((h % 7) - 3) + (h % 2) * 0.5  // -3 ~ 3.5
+    return (h % 5) * 0.7 - 1.4  // -1.4 ~ 2.1
   })()
 
   const bgGradient = flavor?.includes('抹茶')
@@ -35,11 +35,11 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
   return (
     <div
       onClick={onClick}
-      style={{ transform: `rotate(${rot}deg)`, boxShadow: '0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06)' }}
-      className="bg-card-bg rounded-lg overflow-hidden mb-5 cursor-pointer relative transition-all duration-200 hover:scale-[1.01]"
+      style={{ transform: `rotate(${rot}deg)` }}
+      className="bg-card-bg rounded-lg overflow-hidden mb-5 cursor-pointer relative transition-all duration-200 hover:scale-[1.01] shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]"
     >
-      {/* 胶带 */}
-      <div className={`absolute -top-2 left-1/2 -translate-x-1/2 w-10 h-5 ${tapeColor} rounded-sm z-20`} />
+      {/* 胶带（细长条，在卡片上方） */}
+      <div className={`absolute -top-2.5 left-1/2 -translate-x-1/2 w-14 h-[5px] ${tapeColor} opacity-80 z-0`} />
 
       {/* Image */}
       <div
