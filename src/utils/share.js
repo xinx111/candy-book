@@ -112,15 +112,15 @@ export async function generateShareCard(record, aiNote) {
   const ratingY = photoArea.y + photoArea.h + 40
   const safeSpoonsCount = (() => { const n = Math.floor(Number(rating)); return isNaN(n) || n < 0 ? 0 : Math.min(n, 10) })()
   const spoons = '🥄'.repeat(safeSpoonsCount)
-  ctx.font = '34px sans-serif'
+  ctx.font = '28px sans-serif'
   ctx.textAlign = 'center'
   ctx.fillText(spoons, BASE_W / 2, ratingY)
-  ctx.font = 'bold 38px sans-serif'
+  ctx.font = 'bold 32px sans-serif'
   ctx.fillStyle = COLORS.caramel
-  ctx.fillText(`${rating} 勺`, BASE_W / 2, ratingY + 46)
+  ctx.fillText(`${rating} 勺`, BASE_W / 2, ratingY + 38)
 
   // ── 名称 ──
-  let nextY = ratingY + 58
+  let nextY = ratingY + 74
   if (name) {
     ctx.font = 'bold 22px sans-serif'
     ctx.fillStyle = COLORS.text

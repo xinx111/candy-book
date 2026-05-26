@@ -26,20 +26,16 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
     ? '🧀'
     : '🍰🧋'
 
-  // 胶带颜色
-  const tapeColor =
-    rot > 1 ? 'bg-yellow-200/70' :
-    rot < -1 ? 'bg-blue-200/70' :
-    'bg-pink-200/70'
-
   return (
     <div
       onClick={onClick}
       style={{ transform: `rotate(${rot}deg)` }}
       className="bg-card-bg rounded-lg overflow-hidden mb-5 cursor-pointer relative transition-all duration-200 hover:scale-[1.01] shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]"
     >
-      {/* 胶带（细长条，在卡片上方） */}
-      <div className={`absolute -top-2.5 left-1/2 -translate-x-1/2 w-14 h-[5px] ${tapeColor} opacity-80 z-0`} />
+      {/* 三个粉色细长条胶带（左上角） */}
+      <div className="absolute -top-1.5 left-3 w-7 h-[3px] bg-pink-300/60 rotate-[-12deg] z-0 rounded-sm" />
+      <div className="absolute -top-0.5 left-6 w-6 h-[3px] bg-pink-300/60 rotate-[3deg] z-0 rounded-sm" />
+      <div className="absolute top-1 left-1.5 w-5 h-[3px] bg-pink-300/60 rotate-[-6deg] z-0 rounded-sm" />
 
       {/* Image */}
       <div
