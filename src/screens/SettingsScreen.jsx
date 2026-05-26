@@ -97,7 +97,7 @@ export default function SettingsScreen({ goBack, loadRecords }) {
       {/* About */}
       <div className="px-5 pt-5 text-center">
         <div className="text-sm text-caramel font-semibold">🍰 糖记 v1.0.0</div>
-        <div className="text-xs text-text-muted mt-1">一块蛋糕就是一份快乐</div>
+        <div className="text-xs text-text-muted mt-1">祝你每天都是甜甜的</div>
         <div className="text-[11px] text-text-muted mt-0.5">隐私：所有数据仅存储于你的设备</div>
         <div
           className="text-xs text-strawberry mt-6 cursor-pointer"

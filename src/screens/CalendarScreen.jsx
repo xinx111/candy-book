@@ -130,13 +130,21 @@ export default function CalendarScreen({ records, navigateTo }) {
           当天吃了 <strong>{dayRecords.length}</strong> 块 · 平均 <strong>🥄{avgRating}</strong>
         </div>
         {dayRecords.length > 0 && (
-          <div className="flex gap-1.5 mt-2.5">
-            {dayRecords.slice(0, 4).map((r, i) => (
+          <div className="flex gap-2 mt-2.5 overflow-x-auto pb-1 scroll-hide">
+            {dayRecords.map((r) => (
               <div
-                key={i}
-                className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#F0D0D0] to-[#E8C0C0] flex items-center justify-center text-lg"
+                key={r.id}
+                className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-[#F0D0D0] to-[#E8C0C0] flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity relative"
+                onClick={() => navigateTo('detail', { id: r.id })}
               >
-                🍰
+                {r.image_path ? (
+                  <img src={r.image_path} alt={r.name || ''} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-2xl">🍰</span>
+                )}
+                <span className="absolute bottom-0 left-0 right-0 text-[9px] text-white bg-black/40 text-center leading-4">
+                  🥄{r.rating}
+                </span>
               </div>
             ))}
           </div>

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { addRecord, updateRecord, getRecord } from '../data/store'
 import { compressImage } from '../utils/image'
 import {
@@ -26,7 +26,7 @@ const AI_TEMP_MAP = {
   '常温': '常温', '冷藏': '冷藏', '热食': '热食', '冰品': '冰品',
 }
 
-export default function RecordFlow({ navigateTo, goBack, loadRecords, checkAchievements, params }) {
+export default function RecordFlow({ records = [], navigateTo, goBack, loadRecords, checkAchievements, params }) {
   const [step, setStep] = useState(0)
   const [photo, setPhoto] = useState(null)
   const [rating, setRating] = useState(3.5)
@@ -52,6 +52,42 @@ export default function RecordFlow({ navigateTo, goBack, loadRecords, checkAchie
   const [aiError, setAiError] = useState(null)
   const [category, setCategory] = useState(params?.category || '甜品')
   const [photoDate, setPhotoDate] = useState(new Date().toISOString().slice(0, 16))
+
+  // 从历史记录中提取自定义风味/口感（不在预设列表中的）
+  const PRESET_FLAVORS = ['抹茶', '可可', '咖啡', '果味', '花香', '酒香', '芝士', '坚果', '焦糖', '椰香', '茶味', '豆乳']
+  const PRESET_TEXTURES = ['绵密', '轻盈', '酥脆', 'Q弹', '拉丝', '流心', '冰沙', '松软']
+  const PRESET_TOPPINGS = ['珍珠', '椰果', '布丁', '芋泥', '西米露', '仙草', '脆波波']
+  const PRESET_ICE_TEXTURES = ['绵密', '清爽', '沙沙', '浓郁', 'Q弹', '香甜', '冰爽', '爆浆']
+
+  const HISTORIC_MAX = 15
+
+  const historicFlavors = useMemo(() => {
+    const allPreset = new Set(PRESET_FLAVORS)
+    const counts = {}
+    for (const r of records) {
+      for (const f of r.flavor || []) {
+        if (!allPreset.has(f)) counts[f] = (counts[f] || 0) + 1
+      }
+    }
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, HISTORIC_MAX)
+      .map(([name]) => name)
+  }, [records])
+
+  const historicTextures = useMemo(() => {
+    const allPreset = new Set([...PRESET_TEXTURES, ...PRESET_TOPPINGS, ...PRESET_ICE_TEXTURES])
+    const counts = {}
+    for (const r of records) {
+      for (const t of r.texture || []) {
+        if (!allPreset.has(t)) counts[t] = (counts[t] || 0) + 1
+      }
+    }
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, HISTORIC_MAX)
+      .map(([name]) => name)
+  }, [records])
 
   const recognizeDessert = async (imageDataUrl) => {
     setAiLoading(true)
@@ -474,6 +510,26 @@ export default function RecordFlow({ navigateTo, goBack, loadRecords, checkAchie
                 </span>
               ))}
             </div>
+            {historicTextures.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2.5">
+                <span className="text-[11px] text-text-muted self-center mr-0.5">📋 历史</span>
+                {historicTextures.map((t) => (
+                  <span key={t}
+                    className={`text-xs px-2 py-0.5 rounded-pill border cursor-pointer transition-colors ${
+                      texture.includes(t)
+                        ? (category === '饮品' ? 'bg-strawberry/10 text-strawberry border-strawberry/30' : category === '冰品' ? 'bg-[#4A90D9]/10 text-[#4A90D9] border-[#4A90D9]/30' : 'bg-matcha/10 text-matcha border-matcha/30')
+                        : 'bg-white border-border text-text-secondary hover:bg-butter/50'
+                    }`}
+                    onClick={() => {
+                      if (texture.includes(t)) setTexture(texture.filter((x) => x !== t))
+                      else setTexture([...texture, t])
+                    }}
+                  >
+                    {texture.includes(t) ? '✓ ' : '+ '}{t}
+                  </span>
+                ))}
+              </div>
+            )}
             {/* 自定义 */}
             <div className="flex gap-2 mt-2">
               <input
@@ -527,6 +583,26 @@ export default function RecordFlow({ navigateTo, goBack, loadRecords, checkAchie
                 </span>
               ))}
             </div>
+            {historicFlavors.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2.5">
+                <span className="text-[11px] text-text-muted self-center mr-0.5">📋 历史</span>
+                {historicFlavors.map((f) => (
+                  <span key={f}
+                    className={`text-xs px-2 py-0.5 rounded-pill border cursor-pointer transition-colors ${
+                      flavor.includes(f)
+                        ? 'bg-strawberry/10 text-strawberry border-strawberry/30'
+                        : 'bg-white border-border text-text-secondary hover:bg-butter/50'
+                    }`}
+                    onClick={() => {
+                      if (flavor.includes(f)) setFlavor(flavor.filter((x) => x !== f))
+                      else setFlavor([...flavor, f])
+                    }}
+                  >
+                    {flavor.includes(f) ? '✓ ' : '+ '}{f}
+                  </span>
+                ))}
+              </div>
+            )}
             {/* 自定义风味 */}
             <div className="flex gap-2 mt-2">
               <input

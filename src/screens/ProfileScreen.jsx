@@ -15,7 +15,7 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(nickname)
   const [signature, setSignature] = useState(() => {
-    return localStorage.getItem('tangji-signature') || '一块蛋糕就是一份快乐 🍰'
+    return localStorage.getItem('tangji-signature') || '祝你每天都是甜甜的 🍰'
   })
   const [editingSig, setEditingSig] = useState(false)
   const [sigInput, setSigInput] = useState(signature)
@@ -74,7 +74,7 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
   }
 
   const saveSignature = () => {
-    const val = sigInput.trim() || '一块蛋糕就是一份快乐 🍰'
+    const val = sigInput.trim() || '祝你每天都是甜甜的 🍰'
     setSignature(val)
     localStorage.setItem('tangji-signature', val)
     setEditingSig(false)
@@ -318,7 +318,7 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
       {/* About */}
       <div className="text-center pt-6 pb-8">
         <div className="text-sm text-caramel font-semibold">🍰 糖记 v1.0.0</div>
-        <div className="text-xs text-text-muted mt-1">一块蛋糕就是一份快乐</div>
+        <div className="text-xs text-text-muted mt-1">祝你每天都是甜甜的</div>
         <div className="text-[11px] text-text-muted mt-0.5">所有数据仅存储于你的设备</div>
         <div
           className="text-xs text-strawberry mt-5 cursor-pointer"
