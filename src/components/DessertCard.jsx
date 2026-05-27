@@ -1,5 +1,7 @@
+import LazyImage from './LazyImage'
+
 export default function DessertCard({ record, onClick, onDelete, onShopClick, onShare }) {
-  const { image_path, rating, texture, flavor, shop_name, price, is_homemade, name, id } = record
+  const { has_image, rating, texture, flavor, shop_name, price, is_homemade, name, id } = record
   const tags = [...(texture?.slice(0, 2) || []), ...(flavor?.slice(0, 2) || [])].slice(0, 3)
   const spoons = (() => { const n = Math.floor(Number(rating)); return isNaN(n) || n < 0 ? '' : '🥄'.repeat(Math.min(n, 10)) })()
 
@@ -50,10 +52,10 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
         <div
           className={`w-full h-[200px] bg-gradient-to-br ${bgGradient} flex items-center justify-center text-6xl object-cover`}
         >
-        {image_path ? (
-          <img src={image_path} alt="" className="w-full h-full object-cover" loading="lazy" />
+        {has_image ? (
+          <LazyImage id={id} type="thumb" className="w-full h-full" />
         ) : (
-          emoji
+          <span className="text-6xl">{emoji}</span>
         )}
       </div>
 

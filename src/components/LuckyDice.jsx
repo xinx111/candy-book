@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import LazyImage from './LazyImage'
 
 const COLORS = {
   caramel: '#8B5E3C',
@@ -87,8 +88,8 @@ export default function LuckyDice({ records, onClose, navigateTo }) {
           >
             {/* Image */}
             <div className="w-full h-44 bg-gradient-to-br from-[#F0D0D0] to-[#E8C0C0] flex items-center justify-center text-5xl object-cover">
-              {current.image_path ? (
-                <img src={current.image_path} alt="" className="w-full h-full object-cover" />
+              {current.has_image ? (
+                <LazyImage id={current.id} type="full" className="w-full h-full" />
               ) : (
                 current.flavor?.includes('抹茶') ? '🍵' : current.flavor?.includes('可可') ? '🍫' : '🍰'
               )}

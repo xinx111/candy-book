@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getAllRecords, getRecord } from './data/store'
+import { getAllRecords, getRecord, migrateImages } from './data/store'
 import TabBar from './components/TabBar'
 import StatusBar from './components/StatusBar'
 import HomeScreen from './screens/HomeScreen'
@@ -38,6 +38,22 @@ export default function App() {
 
   useEffect(() => {
     loadRecords()
+  }, [loadRecords])
+
+  // 一次性迁移：将旧版 image_path 搬到独立的 images 表
+  useEffect(() => {
+    const run = async () => {
+      const migrationKey = 'tangji-migrated-v2'
+      if (localStorage.getItem(migrationKey)) return
+      const result = await migrateImages((done, total) => {
+        console.log(`迁移进度: ${done}/${total}`)
+      })
+      console.log(`迁移完成: ${result.migrated} 张图片已迁移`)
+      localStorage.setItem(migrationKey, '1')
+      // 迁移后重新加载，此时 image_path 已清掉，records 变轻量
+      loadRecords()
+    }
+    run()
   }, [loadRecords])
 
   const navigateTo = (name, params = {}) => {

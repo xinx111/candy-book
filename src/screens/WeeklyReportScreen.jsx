@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getWeeklySummary } from '../data/store'
+import LazyImage from '../components/LazyImage'
 
 const COLORS = {
   caramel: '#8B5E3C',
@@ -185,8 +186,8 @@ export default function WeeklyReportScreen({ records, navigateTo, goBack }) {
               <div className="text-[13px] font-semibold text-text-primary mb-2">🏆 本周最佳</div>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-butter to-[#E8C0C0] flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
-                  {bestRecord.image_path ? (
-                    <img src={bestRecord.image_path} alt="" className="w-full h-full object-cover" />
+                  {bestRecord.has_image ? (
+                    <LazyImage id={bestRecord.id} type="thumb" className="w-full h-full" />
                   ) : (
                     '🍰'
                   )}

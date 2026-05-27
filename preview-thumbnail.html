@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>缩略图效果预览</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background: #FFF0F0; font-family: system-ui, sans-serif; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-5 gap-6">
+  <div class="text-center text-sm text-text-secondary mb-2">两张图在卡片上的显示效果完全一样👇</div>
+
+  <div class="flex gap-6 flex-wrap justify-center">
+    <!-- 卡片 A：200px 缩略图 -->
+    <div class="flex flex-col items-center gap-2">
+      <div class="text-xs font-semibold text-text-muted mb-1">📱 列表用 · 200px 缩略图（~20KB）</div>
+      <div class="bg-[#FFF5F5] rounded-lg w-[300px] overflow-hidden shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]">
+        <div class="w-full h-[180px] overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#F0D0D0] to-[#E8C0C0]">
+          <svg width="200" height="180" viewBox="0 0 200 180" class="block">
+            <defs>
+              <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#C8E6C9"/>
+                <stop offset="100%" stop-color="#A5D6A7"/>
+              </linearGradient>
+              <clipPath id="c1">
+                <ellipse cx="100" cy="85" rx="45" ry="50"/>
+              </clipPath>
+            </defs>
+            <rect width="200" height="180" fill="url(#g1)"/>
+            <ellipse cx="100" cy="85" rx="45" ry="48" fill="#7DA87B" opacity="0.3"/>
+            <ellipse cx="100" cy="85" rx="35" ry="38" fill="#8B5E3C" opacity="0.15"/>
+            <circle cx="100" cy="85" r="40" fill="#FFF0F0" opacity="0.4"/>
+            <text x="100" y="92" text-anchor="middle" font-size="36">🍵</text>
+            <circle cx="85" cy="80" r="3" fill="white" opacity="0.5"/>
+            <text x="12" y="20" font-size="9" fill="#8B5E3C" opacity="0.5">200px 缩略图</text>
+          </svg>
+        </div>
+        <div class="px-3 pt-1.5">
+          <span class="text-sm font-semibold text-[#3C2415]">抹茶千层蛋糕</span>
+        </div>
+        <div class="flex justify-between items-center px-3 py-2.5">
+          <span class="text-sm font-medium text-[#3C2415]">📍 抹茶研究所</span>
+          <span class="text-[13px] text-[#8B5E3C] font-semibold">¥42</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 卡片 B：800px 原图 -->
+    <div class="flex flex-col items-center gap-2">
+      <div class="text-xs font-semibold text-text-muted mb-1">📱 详情用 · 800px 原图（~150KB）</div>
+      <div class="bg-[#FFF5F5] rounded-lg w-[300px] overflow-hidden shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]">
+        <div class="w-full h-[300px] overflow-hidden flex items-center justify-center bg-gradient-to-br from-[#C8E6C9] to-[#A5D6A7]">
+          <svg width="300" height="300" viewBox="0 0 300 300" class="block">
+            <defs>
+              <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#C8E6C9"/>
+                <stop offset="100%" stop-color="#A5D6A7"/>
+              </linearGradient>
+            </defs>
+            <rect width="300" height="300" fill="url(#g2)"/>
+            <ellipse cx="150" cy="140" rx="65" ry="70" fill="#7DA87B" opacity="0.25"/>
+            <ellipse cx="150" cy="140" rx="50" ry="55" fill="#8B5E3C" opacity="0.1"/>
+            <circle cx="150" cy="140" r="55" fill="#FFF0F0" opacity="0.3"/>
+            <text x="150" y="152" text-anchor="middle" font-size="56">🍵</text>
+            <circle cx="125" cy="130" r="5" fill="white" opacity="0.5"/>
+            <circle cx="130" cy="125" r="3" fill="white" opacity="0.3"/>
+            <text x="15" y="25" font-size="11" fill="#8B5E3C" opacity="0.5">800px 原图</text>
+          </svg>
+        </div>
+        <div class="px-3 pt-1.5">
+          <span class="text-sm font-semibold text-[#3C2415]">抹茶千层蛋糕</span>
+        </div>
+        <div class="flex justify-between items-center px-3 py-2.5">
+          <span class="text-sm font-medium text-[#3C2415]">📍 抹茶研究所</span>
+          <span class="text-[13px] text-[#8B5E3C] font-semibold">¥42</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center text-xs text-text-muted mt-4 max-w-md">
+    列表卡片高度 180px，200px 的缩略图完全够用<br>
+    视觉上肉眼看不出区别，但加载速度能快 5-8 倍
+  </div>
+</body>
+</html>
