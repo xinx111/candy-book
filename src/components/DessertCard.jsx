@@ -32,19 +32,6 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
       style={{ transform: `rotate(${rot}deg)` }}
       className="bg-card-bg rounded-lg overflow-hidden mb-5 cursor-pointer relative transition-all duration-200 hover:scale-[1.01] shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]"
     >
-      {/* 3D 金色图钉（右上角） */}
-      <div className="absolute -top-2.5 -right-2.5 z-20" style={{ filter: 'drop-shadow(1px 3px 4px rgba(0,0,0,0.25))' }}>
-        {/* 针身 */}
-        <div className="w-0.5 h-4 bg-gradient-to-b from-yellow-600 to-yellow-700 mx-auto rounded-b-full" style={{ marginLeft: '1px' }} />
-        {/* 钉帽 - 立体金属质感 */}
-        <div className="w-[18px] h-[18px] rounded-full bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-700 relative">
-          {/* 高光 */}
-          <div className="absolute top-[3px] left-[4px] w-[5px] h-[5px] bg-white/50 rounded-full" />
-          {/* 边缘暗部 */}
-          <div className="absolute bottom-[2px] right-[2px] w-[4px] h-[4px] bg-yellow-800/40 rounded-full" />
-        </div>
-      </div>
-
       {/* Image */}
       <div
         className={`w-full h-[200px] bg-gradient-to-br ${bgGradient} flex items-center justify-center text-6xl object-cover`}
@@ -79,7 +66,7 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
               onShare(record)
             }}
           >
-            📤
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </span>
         </div>
       )}
