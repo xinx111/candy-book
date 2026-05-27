@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { getRecordImage } from '../data/store'
 
 export default function DessertCard({ record, onClick, onDelete, onShopClick, onShare }) {
@@ -7,27 +7,11 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
   const spoons = (() => { const n = Math.floor(Number(rating)); return isNaN(n) || n < 0 ? '' : '🥄'.repeat(Math.min(n, 10)) })()
 
   const [imageSrc, setImageSrc] = useState(null)
-  const imgRef = useRef(null)
-  const obsRef = useRef(null)
 
-  // 懒加载图片：卡片进入屏幕时才从 IndexedDB 读取
+  // 异步加载图片（卡片挂载后自动读取）
   useEffect(() => {
     if (!has_image) return
-    if (obsRef.current) obsRef.current.disconnect()
-    const el = imgRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          observer.disconnect()
-          getRecordImage(id).then(setImageSrc)
-        }
-      },
-      { rootMargin: '200px' }
-    )
-    observer.observe(el)
-    obsRef.current = observer
-    return () => observer.disconnect()
+    getRecordImage(id).then(setImageSrc)
   }, [id, has_image])
 
   const bgGradient = flavor?.includes('抹茶')
@@ -75,7 +59,6 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
       <div className="overflow-hidden rounded-lg">
         {/* Image */}
         <div
-          ref={imgRef}
           className={`w-full h-[200px] bg-gradient-to-br ${bgGradient} flex items-center justify-center text-6xl object-cover`}
         >
           {has_image && imageSrc ? (

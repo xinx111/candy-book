@@ -13,6 +13,7 @@ import WishlistScreen from './screens/WishlistScreen'
 import ProfileScreen from './screens/ProfileScreen'
 import SettingsScreen from './screens/SettingsScreen'
 import AchievementModal from './components/AchievementModal'
+import ErrorBoundary from './components/ErrorBoundary'
 import { ACHIEVEMENTS } from './data/constants'
 
 const SCREENS_WITH_TABS = ['home', 'calendar', 'stats', 'wishlist', 'empty', 'profile']
@@ -123,7 +124,7 @@ case 'weekly-report':
             showTabs ? 'h-[calc(844px-44px-64px)]' : 'h-[calc(844px-44px)]'
           }`}
         >
-          {renderScreen()}
+          <ErrorBoundary>{renderScreen()}</ErrorBoundary>
         </div>
         {showTabs && (
           <TabBar
