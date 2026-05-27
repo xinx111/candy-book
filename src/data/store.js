@@ -5,7 +5,7 @@
 import { openDB } from 'idb'
 
 const DB_NAME = 'tangji-db'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const STORE_NAME = 'desserts'
 
 let dbPromise = null
@@ -13,14 +13,19 @@ let dbPromise = null
 function getDB() {
   if (!dbPromise) {
     dbPromise = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
+      upgrade(db, oldVersion) {
+        // v1: desserts 表
+        if (oldVersion < 1) {
           const store = db.createObjectStore(STORE_NAME, {
             keyPath: 'id',
           })
           store.createIndex('created_at', 'created_at')
           store.createIndex('shop_name', 'shop_name')
           store.createIndex('rating', 'rating')
+        }
+        // v2: 之前加的 images 表（已弃用，保留空表以避免版本冲突）
+        if (oldVersion < 2 && !db.objectStoreNames.contains('images')) {
+          db.createObjectStore('images', { keyPath: 'id' })
         }
       },
     })
