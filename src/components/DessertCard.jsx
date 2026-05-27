@@ -32,16 +32,17 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
       style={{ transform: `rotate(${rot}deg)` }}
       className="bg-card-bg rounded-lg overflow-hidden mb-5 cursor-pointer relative transition-all duration-200 hover:scale-[1.01] shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]"
     >
-      {/* 和纸胶带（撕纸边缘 + 斜条纹） */}
-      <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10" style={{ filter: 'drop-shadow(1px 2px 3px rgba(0,0,0,0.12))' }}>
-        <div
-          className="w-20 h-5"
-          style={{
-            background: 'rgba(255, 226, 222, 0.75)',
-            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(232, 113, 109, 0.2) 6px, rgba(232, 113, 109, 0.2) 10px)',
-            clipPath: 'polygon(0% 20%, 4% 0%, 8% 25%, 12% 5%, 16% 30%, 20% 10%, 24% 35%, 96% 10%, 100% 30%, 97% 50%, 100% 70%, 98% 90%, 95% 70%, 16% 90%, 12% 70%, 8% 95%, 4% 75%, 0% 100%)',
-          }}
-        />
+      {/* 3D 金色图钉（右上角） */}
+      <div className="absolute -top-2.5 -right-2.5 z-20" style={{ filter: 'drop-shadow(1px 3px 4px rgba(0,0,0,0.25))' }}>
+        {/* 针身 */}
+        <div className="w-0.5 h-4 bg-gradient-to-b from-yellow-600 to-yellow-700 mx-auto rounded-b-full" style={{ marginLeft: '1px' }} />
+        {/* 钉帽 - 立体金属质感 */}
+        <div className="w-[18px] h-[18px] rounded-full bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-700 relative">
+          {/* 高光 */}
+          <div className="absolute top-[3px] left-[4px] w-[5px] h-[5px] bg-white/50 rounded-full" />
+          {/* 边缘暗部 */}
+          <div className="absolute bottom-[2px] right-[2px] w-[4px] h-[4px] bg-yellow-800/40 rounded-full" />
+        </div>
       </div>
 
       {/* Image */}
