@@ -30,7 +30,7 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
     <div
       onClick={onClick}
       style={{ transform: `rotate(${rot}deg)` }}
-      className="bg-card-bg rounded-lg mb-5 cursor-pointer relative transition-all duration-200 hover:scale-[1.01] shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]"
+      className="bg-card-bg rounded-lg mb-5 cursor-pointer relative shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]"
     >
       {/* 和纸胶带：一半在背景一半在卡片上 */}
       <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10" style={{ filter: 'drop-shadow(1px 2px 3px rgba(0,0,0,0.08))' }}>

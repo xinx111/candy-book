@@ -169,6 +169,7 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
       setPrice(r.price ? String(r.price) : '')
       setIsHomemade(r.is_homemade || false)
       setNote(r.note || '')
+      setPhotoDate(r.created_at ? r.created_at.slice(0, 16) : new Date().toISOString().slice(0, 16))
     })
   }, [params?.id])
 
