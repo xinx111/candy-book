@@ -43,6 +43,18 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
         )}
       </div>
 
+      {/* 和纸胶带：一半贴在图片上，一半贴在内容区 */}
+      <div className="absolute left-1/2 -translate-x-1/2 z-10" style={{ top: '192px', filter: 'drop-shadow(1px 2px 3px rgba(0,0,0,0.1))' }}>
+        <div
+          className="w-16 h-4"
+          style={{
+            background: 'rgba(255, 226, 222, 0.7)',
+            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(232, 113, 109, 0.15) 5px, rgba(232, 113, 109, 0.15) 9px)',
+            clipPath: 'polygon(0% 15%, 5% 0%, 10% 20%, 15% 5%, 20% 25%, 25% 10%, 30% 30%, 90% 10%, 95% 30%, 100% 15%, 97% 50%, 100% 85%, 95% 70%, 90% 95%, 30% 85%, 25% 95%, 20% 75%, 15% 90%, 10% 70%, 5% 85%, 0% 65%)',
+          }}
+        />
+      </div>
+
       {/* Share button */}
       {onShare && (
         <div className="absolute top-3 right-3 z-10 flex gap-1.5">
