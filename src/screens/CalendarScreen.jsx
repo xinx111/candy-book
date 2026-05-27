@@ -138,7 +138,7 @@ export default function CalendarScreen({ records, navigateTo }) {
                 onClick={() => navigateTo('detail', { id: r.id })}
               >
                 {r.image_path ? (
-                  <img src={r.image_path} alt={r.name || ''} className="w-full h-full object-cover" />
+                  <img src={r.image_path} alt={r.name || ''} className="w-full h-full object-cover" loading="lazy" />
                 ) : (
                   <span className="text-2xl">🍰</span>
                 )}

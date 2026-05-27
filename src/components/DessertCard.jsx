@@ -51,7 +51,7 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
           className={`w-full h-[200px] bg-gradient-to-br ${bgGradient} flex items-center justify-center text-6xl object-cover`}
         >
         {image_path ? (
-          <img src={image_path} alt="" className="w-full h-full object-cover" />
+          <img src={image_path} alt="" className="w-full h-full object-cover" loading="lazy" />
         ) : (
           emoji
         )}

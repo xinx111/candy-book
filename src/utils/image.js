@@ -2,8 +2,8 @@
  * 图片压缩工具 - 浏览器端 Canvas 压缩
  */
 
-const MAX_WIDTH = 800
-const QUALITY = 0.7
+const MAX_WIDTH = 600
+const QUALITY = 0.65
 
 export function compressImage(dataUrl) {
   return new Promise((resolve) => {
