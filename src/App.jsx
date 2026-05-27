@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getAllRecordsText, getRecord } from './data/store'
+import { getAllRecords, getRecord } from './data/store'
 import TabBar from './components/TabBar'
 import StatusBar from './components/StatusBar'
 import HomeScreen from './screens/HomeScreen'
@@ -29,7 +29,7 @@ export default function App() {
 
   const loadRecords = useCallback(async () => {
     try {
-      const all = await getAllRecordsText()
+      const all = await getAllRecords()
       setRecords(all)
     } catch (e) {
       console.error('Failed to load records:', e)

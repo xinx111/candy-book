@@ -1,11 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getWeeklySummary, getRecordImage } from '../data/store'
-
-function BestThumb({ id }) {
-  const [src, setSrc] = useState(null)
-  useEffect(() => { getRecordImage(id).then(setSrc) }, [id])
-  return <img src={src} alt="" className="w-full h-full object-cover" />
-}
+import { getWeeklySummary } from '../data/store'
 
 const COLORS = {
   caramel: '#8B5E3C',
@@ -191,8 +185,8 @@ export default function WeeklyReportScreen({ records, navigateTo, goBack }) {
               <div className="text-[13px] font-semibold text-text-primary mb-2">🏆 本周最佳</div>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-butter to-[#E8C0C0] flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
-                  {bestRecord.has_image ? (
-                    <BestThumb id={bestRecord.id} />
+                  {bestRecord.image_path ? (
+                    <img src={bestRecord.image_path} alt="" className="w-full h-full object-cover" />
                   ) : (
                     '🍰'
                   )}

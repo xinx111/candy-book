@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { groupByDate, deleteRecord, getRecordImage } from '../data/store'
+import { groupByDate, deleteRecord } from '../data/store'
 import DessertCard from '../components/DessertCard'
 import LuckyDice from '../components/LuckyDice'
 import { generateShareCard, shareCard, generateAiCopy } from '../utils/share'
@@ -84,10 +84,8 @@ export default function HomeScreen({ records, navigateTo, loadRecords }) {
   const handleShare = async (record) => {
     setSharingId(record.id)
     try {
-      const image_path = await getRecordImage(record.id)
-      const shareRecord = { ...record, image_path }
-      const aiNote = await generateAiCopy(shareRecord)
-      const canvas = await generateShareCard(shareRecord, aiNote)
+      const aiNote = await generateAiCopy(record)
+      const canvas = await generateShareCard(record, aiNote)
       await shareCard(canvas)
     } catch (e) {
       alert('生成分享卡片失败：' + e.message)

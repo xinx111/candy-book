@@ -14,16 +14,12 @@ function getDB() {
   if (!dbPromise) {
     dbPromise = openDB(DB_NAME, DB_VERSION, {
       upgrade(db, oldVersion) {
-        // v1: desserts 表
-        if (oldVersion < 1) {
-          const store = db.createObjectStore(STORE_NAME, {
-            keyPath: 'id',
-          })
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' })
           store.createIndex('created_at', 'created_at')
           store.createIndex('shop_name', 'shop_name')
           store.createIndex('rating', 'rating')
         }
-        // v2: 之前加的 images 表（已弃用，保留空表以避免版本冲突）
         if (oldVersion < 2 && !db.objectStoreNames.contains('images')) {
           db.createObjectStore('images', { keyPath: 'id' })
         }
@@ -86,23 +82,6 @@ export async function getAllRecords() {
   const db = await getDB()
   const records = await db.getAllFromIndex(STORE_NAME, 'created_at')
   return records.reverse() // newest first
-}
-
-/** 只返回文字数据，不带图片（首页列表用） */
-export async function getAllRecordsText() {
-  const db = await getDB()
-  const records = await db.getAllFromIndex(STORE_NAME, 'created_at')
-  return records.reverse().map((r) => {
-    const { image_path, ...rest } = r
-    return { ...rest, has_image: !!image_path }
-  })
-}
-
-/** 根据 ID 获取图片（懒加载用） */
-export async function getRecordImage(id) {
-  const db = await getDB()
-  const record = await db.get(STORE_NAME, id)
-  return record?.image_path || null
 }
 
 export async function getRecordsByShop(shopName) {

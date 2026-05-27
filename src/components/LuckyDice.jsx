@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
-import { getRecordImage } from '../data/store'
+import { useState, useCallback } from 'react'
 
 const COLORS = {
   caramel: '#8B5E3C',
@@ -12,13 +11,6 @@ export default function LuckyDice({ records, onClose, navigateTo }) {
   const [current, setCurrent] = useState(null)
   const [rolling, setRolling] = useState(false)
   const [history, setHistory] = useState([])
-  const [currentImage, setCurrentImage] = useState(null)
-
-  // 当 current 变化时加载图片
-  useEffect(() => {
-    if (current?.has_image) getRecordImage(current.id).then(setCurrentImage)
-    else setCurrentImage(null)
-  }, [current])
 
   // 过滤掉自制（也可以不过滤，更随机）
   const pool = records.filter((r) => !r.is_homemade || Math.random() > 0.5)
@@ -95,10 +87,8 @@ export default function LuckyDice({ records, onClose, navigateTo }) {
           >
             {/* Image */}
             <div className="w-full h-44 bg-gradient-to-br from-[#F0D0D0] to-[#E8C0C0] flex items-center justify-center text-5xl object-cover">
-              {currentImage ? (
-                <img src={currentImage} alt="" className="w-full h-full object-cover" />
-              ) : current.has_image ? (
-                <span className="text-5xl opacity-30">🍰</span>
+              {current.image_path ? (
+                <img src={current.image_path} alt="" className="w-full h-full object-cover" />
               ) : (
                 current.flavor?.includes('抹茶') ? '🍵' : current.flavor?.includes('可可') ? '🍫' : '🍰'
               )}
