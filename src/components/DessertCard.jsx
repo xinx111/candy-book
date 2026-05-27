@@ -32,11 +32,16 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
       style={{ transform: `rotate(${rot}deg)` }}
       className="bg-card-bg rounded-lg overflow-hidden mb-5 cursor-pointer relative transition-all duration-200 hover:scale-[1.01] shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]"
     >
-      {/* 立体图钉（倾斜） */}
-      <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 z-10 rotate-[-15deg]" style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.2))' }}>
-        <div className="w-[13px] h-[15px] rounded-full bg-gradient-to-b from-pink-200 to-pink-400 relative">
-          <div className="absolute top-[2px] left-[3px] w-[3px] h-[3px] bg-white/60 rounded-full" />
-        </div>
+      {/* 和纸胶带（撕纸边缘 + 斜条纹） */}
+      <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10" style={{ filter: 'drop-shadow(1px 2px 3px rgba(0,0,0,0.12))' }}>
+        <div
+          className="w-20 h-5"
+          style={{
+            background: 'rgba(255, 226, 222, 0.75)',
+            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(232, 113, 109, 0.2) 6px, rgba(232, 113, 109, 0.2) 10px)',
+            clipPath: 'polygon(0% 20%, 4% 0%, 8% 25%, 12% 5%, 16% 30%, 20% 10%, 24% 35%, 96% 10%, 100% 30%, 97% 50%, 100% 70%, 98% 90%, 95% 70%, 16% 90%, 12% 70%, 8% 95%, 4% 75%, 0% 100%)',
+          }}
+        />
       </div>
 
       {/* Image */}
