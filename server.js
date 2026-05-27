@@ -102,7 +102,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   // 甜品识别（图片+分析）
-  if (req.method === 'POST' && req.url === '/api/recognize' || req.url === '/recognize') {
+  if (req.method === 'POST' && (req.url === '/api/recognize' || req.url === '/recognize')) {
     try {
       const { image } = JSON.parse(await getBody())
       const result = await callGLM([
@@ -130,7 +130,7 @@ const server = http.createServer(async (req, res) => {
     return
   }
   // 通用 AI 接口（搜索/报告/文案）
-  if (req.method === 'POST' && req.url === '/api/ai' || req.url === '/ai') {
+  if (req.method === 'POST' && (req.url === '/api/ai' || req.url === '/ai')) {
     try {
       const { prompt, image } = JSON.parse(await getBody())
       const messages = [{ role: 'user', content: [{ type: 'text', text: prompt }] }]

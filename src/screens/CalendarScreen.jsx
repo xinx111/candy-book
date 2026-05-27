@@ -1,5 +1,11 @@
-import { useState } from 'react'
-import LazyImage from '../components/LazyImage'
+import { useState, useEffect } from 'react'
+import { getRecordImage } from '../data/store'
+
+function CalThumb({ id }) {
+  const [src, setSrc] = useState(null)
+  useEffect(() => { getRecordImage(id).then(setSrc) }, [id])
+  return src ? <img src={src} alt="" className="w-full h-full object-cover" /> : <span className="text-2xl">🍰</span>
+}
 
 export default function CalendarScreen({ records, navigateTo }) {
   const today = new Date()
@@ -139,7 +145,7 @@ export default function CalendarScreen({ records, navigateTo }) {
                 onClick={() => navigateTo('detail', { id: r.id })}
               >
                 {r.has_image ? (
-                  <LazyImage id={r.id} type="thumb" className="w-full h-full" />
+                  <CalThumb id={r.id} />
                 ) : (
                   <span className="text-2xl">🍰</span>
                 )}
