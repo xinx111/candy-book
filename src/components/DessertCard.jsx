@@ -8,10 +8,14 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
 
   const [imageSrc, setImageSrc] = useState(null)
   const imgRef = useRef(null)
+  const obsRef = useRef(null)
 
   // 懒加载图片：卡片进入屏幕时才从 IndexedDB 读取
   useEffect(() => {
-    if (!has_image || !imgRef.current) return
+    if (!has_image) return
+    if (obsRef.current) obsRef.current.disconnect()
+    const el = imgRef.current
+    if (!el) return
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -21,7 +25,8 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
       },
       { rootMargin: '200px' }
     )
-    observer.observe(imgRef.current)
+    observer.observe(el)
+    obsRef.current = observer
     return () => observer.disconnect()
   }, [id, has_image])
 
@@ -41,10 +46,17 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
     ? '🧀'
     : '🍰🧋'
 
+  // 稳定旋转角度
+  const rotation = (() => {
+    let h = 0
+    for (const c of (id || '')) h = ((h << 5) - h) + c.charCodeAt(0)
+    return ((h % 5) * 0.7 - 1.4) * 0.5
+  })()
+
   return (
     <div
       onClick={onClick}
-      style={{ transform: `rotate(${(() => { let h = 0; for (const c of (id || '')) h = ((h << 5) - h) + c.charCodeAt(0); return (h % 5) * 0.7 - 1.4 })() * 0.5}deg)` }}
+      style={{ transform: `rotate(${rotation}deg)` }}
       className="bg-card-bg rounded-lg mb-5 cursor-pointer relative transition-all duration-200 hover:scale-[1.01] shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]"
     >
       {/* 和纸胶带：一半在背景一半在卡片上 */}
