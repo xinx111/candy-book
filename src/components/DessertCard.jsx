@@ -37,8 +37,8 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
         <div
           className="w-10 h-8"
           style={{
-            background: 'rgba(255, 240, 240, 0.85)',
-            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(200, 180, 170, 0.15) 6px, rgba(200, 180, 170, 0.15) 10px)',
+            background: 'rgba(255, 240, 240, 0.3)',
+            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(200, 180, 170, 0.1) 6px, rgba(200, 180, 170, 0.1) 10px)',
             clipPath: 'polygon(0% 20%, 4% 0%, 8% 25%, 12% 5%, 16% 30%, 20% 10%, 24% 35%, 96% 10%, 100% 30%, 97% 50%, 100% 70%, 98% 90%, 95% 70%, 16% 90%, 12% 70%, 8% 95%, 4% 75%, 0% 100%)',
           }}
         />
