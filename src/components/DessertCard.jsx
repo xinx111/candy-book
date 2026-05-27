@@ -30,12 +30,26 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
     <div
       onClick={onClick}
       style={{ transform: `rotate(${rot}deg)` }}
-      className="bg-card-bg rounded-lg overflow-hidden mb-5 cursor-pointer relative transition-all duration-200 hover:scale-[1.01] shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]"
+      className="bg-card-bg rounded-lg mb-5 cursor-pointer relative transition-all duration-200 hover:scale-[1.01] shadow-[0_0_0_3px_white,0_4px_12px_rgba(0,0,0,0.1)]"
     >
-      {/* Image */}
-      <div
-        className={`w-full h-[200px] bg-gradient-to-br ${bgGradient} flex items-center justify-center text-6xl object-cover`}
-      >
+      {/* 和纸胶带：一半在背景一半在卡片上 */}
+      <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10" style={{ filter: 'drop-shadow(1px 2px 3px rgba(0,0,0,0.08))' }}>
+        <div
+          className="w-10 h-8"
+          style={{
+            background: 'rgba(255, 240, 240, 0.85)',
+            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(200, 180, 170, 0.15) 6px, rgba(200, 180, 170, 0.15) 10px)',
+            clipPath: 'polygon(0% 20%, 4% 0%, 8% 25%, 12% 5%, 16% 30%, 20% 10%, 24% 35%, 96% 10%, 100% 30%, 97% 50%, 100% 70%, 98% 90%, 95% 70%, 16% 90%, 12% 70%, 8% 95%, 4% 75%, 0% 100%)',
+          }}
+        />
+      </div>
+
+      {/* 内容区（含 overflow-hidden 用来裁切圆角） */}
+      <div className="overflow-hidden rounded-lg">
+        {/* Image */}
+        <div
+          className={`w-full h-[200px] bg-gradient-to-br ${bgGradient} flex items-center justify-center text-6xl object-cover`}
+        >
         {image_path ? (
           <img src={image_path} alt="" className="w-full h-full object-cover" />
         ) : (
@@ -43,14 +57,14 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
         )}
       </div>
 
-      {/* 和纸胶带：一半贴在图片上，一半贴在内容区 */}
-      <div className="absolute left-1/2 -translate-x-1/2 z-10" style={{ top: '192px', filter: 'drop-shadow(1px 2px 3px rgba(0,0,0,0.1))' }}>
+      {/* 和纸胶带：把整张卡片贴到背景上 */}
+      <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10" style={{ filter: 'drop-shadow(1px 2px 3px rgba(0,0,0,0.08))' }}>
         <div
-          className="w-16 h-4"
+          className="w-20 h-5"
           style={{
-            background: 'rgba(255, 226, 222, 0.7)',
-            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(232, 113, 109, 0.15) 5px, rgba(232, 113, 109, 0.15) 9px)',
-            clipPath: 'polygon(0% 15%, 5% 0%, 10% 20%, 15% 5%, 20% 25%, 25% 10%, 30% 30%, 90% 10%, 95% 30%, 100% 15%, 97% 50%, 100% 85%, 95% 70%, 90% 95%, 30% 85%, 25% 95%, 20% 75%, 15% 90%, 10% 70%, 5% 85%, 0% 65%)',
+            background: 'rgba(255, 240, 240, 0.85)',
+            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(200, 180, 170, 0.15) 6px, rgba(200, 180, 170, 0.15) 10px)',
+            clipPath: 'polygon(0% 20%, 4% 0%, 8% 25%, 12% 5%, 16% 30%, 20% 10%, 24% 35%, 96% 10%, 100% 30%, 97% 50%, 100% 70%, 98% 90%, 95% 70%, 16% 90%, 12% 70%, 8% 95%, 4% 75%, 0% 100%)',
           }}
         />
       </div>
@@ -140,6 +154,7 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
           {is_homemade ? '—' : price ? `¥${price}` : ''}
         </span>
       </div>
+    </div>
     </div>
   )
 }
