@@ -81,7 +81,22 @@ export async function getRecord(id) {
 export async function getAllRecords() {
   const db = await getDB()
   const records = await db.getAllFromIndex(STORE_NAME, 'created_at')
-  return records.reverse() // newest first
+  return records.reverse().map(({ image_path, ...rest }) => ({
+    ...rest, has_image: !!image_path,
+  }))
+}
+
+/** 按 ID 获取图片（列表不加载，详情/分享时用） */
+export async function getRecordImage(id) {
+  const db = await getDB()
+  const record = await db.get(STORE_NAME, id)
+  return record?.image_path || null
+}
+
+/** 获取完整记录（含图片，详情页用） */
+export async function getRecordDetail(id) {
+  const db = await getDB()
+  return db.get(STORE_NAME, id)
 }
 
 export async function getRecordsByShop(shopName) {
