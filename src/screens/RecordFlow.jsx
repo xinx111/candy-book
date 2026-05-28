@@ -51,7 +51,7 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
   const [aiResult, setAiResult] = useState(null)
   const [aiError, setAiError] = useState(null)
   const [category, setCategory] = useState(params?.category || '甜品')
-  const [photoDate, setPhotoDate] = useState(new Date().toISOString().slice(0, 16))
+  const [photoDate, setPhotoDate] = useState(new Date().toISOString().slice(0, 10))
 
   // 从历史记录中提取自定义风味/口感（不在预设列表中的）
   const PRESET_FLAVORS = ['抹茶', '可可', '咖啡', '果味', '花香', '酒香', '芝士', '坚果', '焦糖', '椰香', '茶味', '豆乳']
@@ -169,7 +169,7 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
       setPrice(r.price ? String(r.price) : '')
       setIsHomemade(r.is_homemade || false)
       setNote(r.note || '')
-      setPhotoDate(r.created_at ? r.created_at.slice(0, 16) : new Date().toISOString().slice(0, 16))
+      setPhotoDate(r.created_at ? r.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10))
     })
   }, [params?.id])
 
@@ -762,7 +762,7 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
         <div className="mb-4">
           <div className="text-[13px] font-semibold text-text-primary mb-1.5">记录日期</div>
           <input
-            type="datetime-local"
+            type="date"
             className="form-input text-sm"
             value={photoDate}
             onChange={(e) => setPhotoDate(e.target.value)}

@@ -23,7 +23,9 @@ export default function App() {
   const [screenParams, setScreenParams] = useState({})
   const [history, setHistory] = useState([])
   const [records, setRecords] = useState([])
-  const [unlockedAchievements, setUnlockedAchievements] = useState(new Set())
+  const [unlockedAchievements, setUnlockedAchievements] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('tangji-achievements') || '[]')) } catch { return new Set() }
+  })
   const [newAchievement, setNewAchievement] = useState(null)
   const [showAchievement, setShowAchievement] = useState(false)
 
@@ -69,6 +71,7 @@ export default function App() {
         setUnlockedAchievements((prev) => {
           const next = new Set(prev)
           newlyUnlocked.forEach((a) => next.add(a.id))
+          localStorage.setItem('tangji-achievements', JSON.stringify([...next]))
           return next
         })
       }
