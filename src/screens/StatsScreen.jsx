@@ -7,6 +7,8 @@ export default function StatsScreen({ records, navigateTo }) {
   const shops = groupByShop(records).slice(0, 5)
   const [aiReport, setAiReport] = useState(null)
   const [aiReportLoading, setAiReportLoading] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState(null)
+  const [previewBlob, setPreviewBlob] = useState(null)
 
   const generateAiReport = async () => {
     if (records.length === 0) return
@@ -143,9 +145,8 @@ export default function StatsScreen({ records, navigateTo }) {
     ctx.stroke()
 
     const blob = await new Promise((r) => canvas.toBlob(r, 'image/png'))
-    const file = new File([blob], `糖记_口味报告.png`, { type: 'image/png' })
-    try { await navigator.share({ files: [file], title: '糖记 · 口味报告' }) }
-    catch { const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `糖记_口味报告.png`; a.click(); URL.revokeObjectURL(url) }
+    setPreviewUrl(URL.createObjectURL(blob))
+    setPreviewBlob(blob)
   }
 
   // Flavor aggregation
@@ -454,6 +455,29 @@ export default function StatsScreen({ records, navigateTo }) {
       >
         📋 想吃清单 →
       </div>
+
+      {/* 报告图片预览 */}
+      {previewUrl && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-5" onClick={() => { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); setPreviewBlob(null) }}>
+          <div className="bg-white rounded-xl overflow-hidden max-h-[90vh] flex flex-col shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="overflow-y-auto p-4">
+              <img src={previewUrl} alt="报告预览" className="w-[300px] h-auto rounded-lg shadow" />
+            </div>
+            <div className="flex gap-3 px-4 pb-4">
+              <button className="flex-1 py-2.5 bg-caramel text-white rounded-pill text-sm font-semibold" onClick={() => {
+                const file = new File([previewBlob], `糖记_口味报告.png`, { type: 'image/png' })
+                if (navigator.share) navigator.share({ files: [file], title: '糖记 · 口味报告' })
+                  .catch(() => { const a = document.createElement('a'); a.href = previewUrl; a.download = `糖记_口味报告.png`; a.click() })
+              }}>
+                📤 分享
+              </button>
+              <button className="flex-1 py-2.5 bg-white text-text-secondary border border-border rounded-pill text-sm" onClick={() => { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); setPreviewBlob(null) }}>
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
