@@ -319,6 +319,18 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
             className="hidden"
             onChange={handlePhotoCapture}
           />
+
+          {/* 已有照片时显示下一步按钮 */}
+          {photo && (
+            <div className="mt-6 text-center">
+              <button
+                className="px-10 py-3 bg-caramel text-white rounded-pill text-sm font-medium"
+                onClick={() => setStep(1)}
+              >
+                下一步 →
+              </button>
+            </div>
+          )}
         </div>
       </div>
     )
