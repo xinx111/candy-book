@@ -42,7 +42,7 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
         <div className="absolute top-3 right-3 z-10 flex gap-1.5">
           {onDelete && (
             <span
-              className="w-7 h-7 bg-white/85 backdrop-blur rounded-full flex items-center justify-center text-[13px] text-strawberry cursor-pointer shadow-sm hover:bg-strawberry hover:text-white transition-colors"
+              className="w-7 h-7 bg-white/85 rounded-full flex items-center justify-center text-[13px] text-strawberry cursor-pointer shadow-sm hover:bg-strawberry hover:text-white transition-colors"
               onClick={(e) => {
                 e.stopPropagation()
                 if (window.confirm('确定删除这条记录？')) {
@@ -54,7 +54,7 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
             </span>
           )}
           <span
-            className="w-7 h-7 bg-white/85 backdrop-blur rounded-full flex items-center justify-center text-[13px] text-caramel cursor-pointer shadow-sm hover:bg-caramel hover:text-white transition-colors"
+            className="w-7 h-7 bg-white/85 rounded-full flex items-center justify-center text-[13px] text-caramel cursor-pointer shadow-sm hover:bg-caramel hover:text-white transition-colors"
             onClick={(e) => {
               e.stopPropagation()
               onShare(record)
@@ -69,7 +69,7 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
       {!onShare && onDelete && (
         <div className="absolute top-3 right-3 z-10">
           <span
-            className="w-7 h-7 bg-white/85 backdrop-blur rounded-full flex items-center justify-center text-[13px] text-strawberry cursor-pointer shadow-sm hover:bg-strawberry hover:text-white transition-colors"
+            className="w-7 h-7 bg-white/85 rounded-full flex items-center justify-center text-[13px] text-strawberry cursor-pointer shadow-sm hover:bg-strawberry hover:text-white transition-colors"
             onClick={(e) => {
               e.stopPropagation()
               if (window.confirm('确定删除这条记录？')) {
@@ -94,7 +94,7 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
       )}
 
       {/* Rating */}
-      <div className="absolute bottom-[52px] right-3 text-lg tracking-[2px] bg-white/85 backdrop-blur px-2.5 py-1 rounded-pill">
+      <div className="absolute bottom-[52px] right-3 text-lg tracking-[2px] bg-white/85 px-2.5 py-1 rounded-pill">
         {spoons}
       </div>
 
