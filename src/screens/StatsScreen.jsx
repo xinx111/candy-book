@@ -48,6 +48,106 @@ export default function StatsScreen({ records, navigateTo }) {
     setAiReportLoading(false)
   }
 
+  const generateReportImage = async (reportText, stats, allRecords) => {
+    const canvas = document.createElement('canvas')
+    const dpr = Math.min(window.devicePixelRatio || 1, 3)
+    const W = 540 * dpr
+    const H = 720 * dpr
+    canvas.width = W
+    canvas.height = H
+    const ctx = canvas.getContext('2d')
+    ctx.scale(dpr, dpr)
+
+    // Background
+    ctx.fillStyle = '#FFF5F5'
+    roundRect(ctx, 0, 0, 540, 720, 24)
+    ctx.fill()
+
+    // Title
+    ctx.fillStyle = '#8B5E3C'
+    ctx.font = 'bold 26px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('🍰 糖记 · 口味报告', 270, 50)
+
+    // Stats row
+    const boxes = [
+      { label: '总计', value: `${allRecords.length}块`, color: '#8B5E3C' },
+      { label: '本月', value: `${stats.monthCount}块`, color: '#E8716D' },
+      { label: '平均评分', value: `🥄${stats.avgRating}`, color: '#7DA87B' },
+      { label: '总花费', value: `¥${stats.totalSpent}`, color: '#8B5E3C' },
+    ]
+    boxes.forEach(({ label, value, color }, i) => {
+      const x = 30 + i * 125
+      ctx.fillStyle = `${color}15`
+      roundRect(ctx, x, 75, 115, 60, 12)
+      ctx.fill()
+      ctx.fillStyle = color
+      ctx.font = 'bold 22px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText(value, x + 57, 105)
+      ctx.font = '11px sans-serif'
+      ctx.fillText(label, x + 57, 125)
+    })
+
+    // Divider
+    ctx.strokeStyle = '#F0D0D0'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(40, 155)
+    ctx.lineTo(500, 155)
+    ctx.stroke()
+
+    // Report text
+    ctx.fillStyle = '#3C2415'
+    ctx.font = '15px sans-serif'
+    ctx.textAlign = 'left'
+    const lines = wrapText(ctx, reportText || '', 480)
+    let y = 185
+    for (const line of lines.slice(0, 18)) {
+      ctx.fillText(line, 40, y)
+      y += 24
+    }
+
+    // Flavor favorites
+    y = Math.max(y + 20, 380)
+    ctx.fillStyle = '#8B5E3C'
+    ctx.font = 'bold 16px sans-serif'
+    ctx.textAlign = 'left'
+    ctx.fillText('🏆 最爱的风味', 40, y)
+    const topFlavors = Object.entries(allRecords.reduce((acc, r) => { (r.flavor || []).forEach(f => acc[f] = (acc[f]||0)+1); return acc }, {}))
+      .sort((a,b) => b[1]-a[1]).slice(0, 4)
+    ctx.font = '14px sans-serif'
+    topFlavors.forEach(([name, count], i) => {
+      ctx.fillStyle = '#A0806E'
+      ctx.textAlign = 'right'
+      ctx.fillText(name, 200, y + 26 + i * 24)
+      const barW = Math.min(count / topFlavors[0][1] * 200, 200)
+      ctx.fillStyle = '#F5D6A8'
+      roundRect(ctx, 215, y + 14 + i * 24, barW, 16, 8)
+      ctx.fill()
+      ctx.fillStyle = '#8B5E3C'
+      ctx.textAlign = 'left'
+      ctx.fillText(`${count}次`, 225 + barW, y + 26 + i * 24)
+    })
+
+    // Footer
+    ctx.fillStyle = '#C4B0A0'
+    ctx.font = '12px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('🍰 糖记 · 一块蛋糕就是一份快乐', 270, 690)
+
+    // Border
+    ctx.strokeStyle = '#F0D0D0'
+    ctx.lineWidth = 2
+    roundRect(ctx, 1, 1, 538, 718, 24)
+    ctx.stroke()
+
+    const blob = await new Promise((r) => canvas.toBlob(r, 'image/png'))
+    const file = new File([blob], `糖记_口味报告.png`, { type: 'image/png' })
+    try { await navigator.share({ files: [file], title: '糖记 · 口味报告' }) }
+    catch { const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `糖记_口味报告.png`; a.click(); URL.revokeObjectURL(url) }
+  }
+
   // Flavor aggregation
   const flavorCounts = {}
   for (const r of records) {
@@ -336,6 +436,13 @@ export default function StatsScreen({ records, navigateTo }) {
             {aiReport && !aiReportLoading && (
               <div className="text-xs text-text-primary leading-relaxed py-1">{aiReport}</div>
             )}
+            {aiReport && !aiReportLoading && (
+              <div className="flex gap-2 mt-2">
+                <button className="flex-1 py-2 text-xs bg-caramel text-white rounded-pill font-medium" onClick={() => generateReportImage(aiReport, stats, records)}>
+                  🖼️ 生成图片
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -349,4 +456,34 @@ export default function StatsScreen({ records, navigateTo }) {
       </div>
     </div>
   )
+}
+
+// ── Canvas 工具函数 ──
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.moveTo(x + r, y)
+  ctx.lineTo(x + w - r, y)
+  ctx.arcTo(x + w, y, x + w, y + r, r)
+  ctx.lineTo(x + w, y + h - r)
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r)
+  ctx.lineTo(x + r, y + h)
+  ctx.arcTo(x, y + h, x, y + h - r, r)
+  ctx.lineTo(x, y + r)
+  ctx.arcTo(x, y, x + r, y, r)
+  ctx.closePath()
+}
+
+function wrapText(ctx, text, maxWidth) {
+  const lines = []
+  let current = ''
+  for (const char of text) {
+    const test = current + char
+    if (ctx.measureText(test).width > maxWidth && current) {
+      lines.push(current)
+      current = char
+    } else {
+      current = test
+    }
+  }
+  if (current) lines.push(current)
+  return lines
 }

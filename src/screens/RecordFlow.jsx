@@ -125,16 +125,15 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
         if (r.temperature && AI_TEMP_MAP[r.temperature]) {
           setTemperature(r.temperature)
         }
-      } else if (data.text) {
-        setAiError(null)
-        setAiResult({ type: '识别完成，请手动选择标签' })
       } else {
-        setAiResult(null)
-        setAiError('识别失败，到标签页可手动选择')
+        // 有 text 说明 AI 返回了文字（可能是空字符串）
+        setAiError(null)
+        setAiResult({ type: data.text || '识别完成，请手动选择标签' })
       }
     } catch (e) {
+      console.error('AI识别请求失败:', e)
       setAiResult(null)
-      setAiError('识别失败')
+      setAiError('AI 识别出错，请手动选择标签')
     } finally {
       setAiLoading(false)
     }

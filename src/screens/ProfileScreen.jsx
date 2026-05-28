@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import { clearAll, getMonthlyStats } from '../data/store'
 import { ACHIEVEMENTS } from '../data/constants'
-import { compressImage } from '../utils/image'
 
 const AVATARS = ['🍰', '🧋', '🍦', '🍮', '🧁', '🍪', '🥮', '🍩', '🍫', '🥧', '🍨', '🍭']
 
@@ -27,6 +26,9 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
   const [birthdayInput, setBirthdayInput] = useState(birthday)
   const [showAchievements, setShowAchievements] = useState(false)
   const avatarFileRef = useRef(null)
+  const [cropImg, setCropImg] = useState(null)
+  const [cropBox, setCropBox] = useState({ x: 0, y: 0, size: 200 })
+  const cropContainerRef = useRef(null)
 
   const stats = useMemo(() => getMonthlyStats(records), [records])
 
@@ -83,18 +85,72 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
   const handleAvatarUpload = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
-    try {
-      const reader = new FileReader()
-      reader.onload = async (ev) => {
-        const compressed = await compressImage(ev.target.result)
-        setAvatar(compressed)
-        localStorage.setItem('tangji-avatar', compressed)
-        setShowAvatarPicker(false)
-      }
-      reader.readAsDataURL(file)
-    } catch (err) {
-      console.error('头像上传失败:', err)
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      setCropImg(ev.target.result)
+      setCropBox({ x: 0, y: 0, size: 200 })
     }
+    reader.readAsDataURL(file)
+  }
+
+  /** 执行裁剪并保存 */
+  const handleCropConfirm = async () => {
+    if (!cropImg) return
+    const img = new Image()
+    img.onload = () => {
+      // 计算实际比例
+      const container = cropContainerRef.current
+      if (!container) return
+      const scale = img.naturalWidth / container.clientWidth
+      const sx = cropBox.x * scale
+      const sy = cropBox.y * scale
+      const sw = cropBox.size * scale
+      const canvas = document.createElement('canvas')
+      canvas.width = 200
+      canvas.height = 200
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, sx, sy, sw, sw, 0, 0, 200, 200)
+      const cropped = canvas.toDataURL('image/jpeg', 0.7)
+      setAvatar(cropped)
+      localStorage.setItem('tangji-avatar', cropped)
+      setShowAvatarPicker(false)
+      setCropImg(null)
+    }
+    img.src = cropImg
+  }
+
+  // 裁剪框拖拽逻辑
+  const startCropDrag = (clientX, clientY) => {
+    const container = cropContainerRef.current
+    if (!container) return
+    const rect = container.getBoundingClientRect()
+    const startX = clientX - rect.left
+    const startY = clientY - rect.top
+    const orig = { ...cropBox }
+    const onMove = (mx, my) => {
+      const dx = mx - rect.left - startX
+      const dy = my - rect.top - startY
+      let nx = orig.x + dx
+      let ny = orig.y + dy
+      const max = container.clientWidth - orig.size
+      nx = Math.max(0, Math.min(nx, max))
+      ny = Math.max(0, Math.min(ny, max))
+      setCropBox((prev) => ({ ...prev, x: nx, y: ny }))
+    }
+    const onEnd = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', onTouchEnd)
+    }
+    const onMouseMove = (e) => { e.preventDefault(); onMove(e.clientX, e.clientY) }
+    const onMouseUp = onEnd
+    const onTouchMove = (e) => { e.preventDefault(); onMove(e.touches[0].clientX, e.touches[0].clientY) }
+    const onTouchEnd = onEnd
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    document.addEventListener('touchend', onTouchEnd)
   }
 
   const saveBirthday = () => {
@@ -327,6 +383,40 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
           删除所有数据
         </div>
       </div>
+
+      {/* 裁剪头像弹窗 */}
+      {cropImg && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-5">
+          <div className="bg-white rounded-xl overflow-hidden max-w-sm w-full">
+            <div className="p-4">
+              <div className="text-sm font-semibold text-text-primary mb-3">调整头像</div>
+              <div
+                ref={cropContainerRef}
+                className="relative w-full aspect-square bg-black rounded-lg overflow-hidden touch-none"
+                onMouseDown={(e) => startCropDrag(e.clientX, e.clientY)}
+                onTouchStart={(e) => startCropDrag(e.touches[0].clientX, e.touches[0].clientY)}
+              >
+                <img src={cropImg} alt="" className="w-full h-full object-contain" />
+                {/* 裁剪框 */}
+                <div
+                  className="absolute border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] cursor-move"
+                  style={{ left: cropBox.x, top: cropBox.y, width: cropBox.size, height: cropBox.size }}
+                >
+                  <div className="absolute bottom-1 right-1 w-4 h-4 border-r-2 border-b-2 border-white" />
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 px-4 pb-4">
+              <button className="flex-1 py-2.5 bg-caramel text-white rounded-pill text-sm" onClick={handleCropConfirm}>
+                ✅ 确认
+              </button>
+              <button className="flex-1 py-2.5 bg-white text-text-secondary border border-border rounded-pill text-sm" onClick={() => setCropImg(null)}>
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
