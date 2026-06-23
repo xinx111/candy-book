@@ -27,7 +27,7 @@ export default function SettingsScreen({ goBack, loadRecords }) {
         md += `\n## ${date}\n\n`
       }
       md += `- ${r.flavor?.join('·') || '甜品'} · ${r.shop_name || (r.is_homemade ? '自制' : '未知店铺')} · 🥄${r.rating} 勺`
-      if (r.price) md += ` · ¥${r.price}`
+      if (r.price) md += ` · ¥${Number(r.price).toFixed(2)}`
       if (r.note) md += `\n  > ${r.note}`
       md += '\n'
     }

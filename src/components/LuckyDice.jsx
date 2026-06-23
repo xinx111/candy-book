@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getRecordImage } from '../data/store'
+import { formatPrice } from '../utils/format'
 
 const COLORS = {
   caramel: '#8B5E3C',
@@ -115,7 +116,7 @@ export default function LuckyDice({ records, onClose, navigateTo }) {
                   {current.is_homemade ? '🏠 自制' : `📍 ${current.shop_name || '未知店铺'}`}
                 </span>
                 {!current.is_homemade && current.price && (
-                  <span className="text-xs text-caramel font-semibold">¥{current.price}</span>
+                  <span className="text-xs text-caramel font-semibold">¥{formatPrice(current.price)}</span>
                 )}
               </div>
               {/* Tags */}

@@ -13,29 +13,25 @@ const COLORS = {
 }
 
 /**
- * AI 生成分享文案
+ * 模板生成分享文案
  */
-export async function generateAiCopy(record) {
-  try {
-    const tags = [record.sweetness, ...(record.texture || []), ...(record.flavor || []), record.temperature].filter(Boolean).join('、')
-    const res = await fetch('/api/ai', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt: `你是甜品文案高手。根据信息生成一句文艺有趣的中文分享文案（30字以内，不要问句，不要前缀）：
+export function generateAiCopy(record) {
+  const { name, shop_name, rating, flavor, sweetness, category, is_homemade } = record
+  const flavorStr = (flavor || []).slice(0, 2).join('+') || ''
 
-${record.shop_name ? `店铺：${record.shop_name}` : ''}
-${record.name ? `名称：${record.name}` : ''}
-标签：${tags}
-评分：${record.rating}勺
-${record.note ? `备注：${record.note}` : ''}
-
-直接输出文案，不要解释。`
-      })
-    })
-    const data = await res.json()
-    return data.success ? data.text : ''
-  } catch { return '' }
+  // 有名称 + 店铺
+  if (name && shop_name) return `${name} @${shop_name} · 🥄${rating}`
+  // 有名称 + 风味
+  if (name && flavorStr) return `${name} · ${flavorStr}风味 · 🥄${rating}`
+  // 有店铺 + 风味
+  if (shop_name && flavorStr) return `${shop_name}的${flavorStr} · 🥄${rating}`
+  // 自制
+  if (is_homemade) return `今日自制 · ${flavorStr || sweetness || category} · 🥄${rating}`
+  // 兜底
+  if (name) return `${name} · 🥄${rating}`
+  if (shop_name) return `${shop_name} · 🥄${rating}`
+  if (flavorStr) return `${flavorStr}风味 · 🥄${rating}`
+  return `今日份甜品快乐 · 🥄${rating}`
 }
 
 export async function generateShareCard(record, aiNote) {
@@ -174,7 +170,7 @@ export async function generateShareCard(record, aiNote) {
     ctx.font = '16px sans-serif'
     ctx.fillStyle = COLORS.caramel
     ctx.textAlign = 'center'
-    ctx.fillText(`¥${price}`, BASE_W / 2, nextY)
+    ctx.fillText(`¥${Number(price).toFixed(2)}`, BASE_W / 2, nextY)
     nextY += 26
   }
   if (is_homemade) {

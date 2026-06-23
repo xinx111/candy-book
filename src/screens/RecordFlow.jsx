@@ -5,26 +5,9 @@ import {
   SWEETNESS_OPTIONS,
   RATING_TEXTS,
 } from '../data/constants'
+import CropModal from '../components/CropModal'
 
 const STEPS = ['拍照', '勺子打分', '风味标签', '补充信息']
-
-const AI_FLAVOR_MAP = {
-  '抹茶': '抹茶', '可可': '可可', '咖啡': '咖啡', '果味': '果味',
-  '花香': '花香', '酒香': '酒香', '芝士': '芝士', '坚果': '坚果',
-  '焦糖': '焦糖', '椰香': '椰香', '茶味': '茶味', '豆乳': '豆乳',
-}
-const AI_TEXTURE_MAP = {
-  '绵密': '绵密', '轻盈': '轻盈', '酥脆': '酥脆', 'Q弹': 'Q弹',
-  '拉丝': '拉丝', '流心': '流心', '冰沙': '冰沙', '松软': '松软',
-}
-// 饮品配料映射
-const AI_TOPPINGS_MAP = {
-  '珍珠': '珍珠', '椰果': '椰果', '布丁': '布丁', '芋泥': '芋泥',
-  '西米露': '西米露', '仙草': '仙草', '脆波波': '脆波波',
-}
-const AI_TEMP_MAP = {
-  '常温': '常温', '冷藏': '冷藏', '热食': '热食', '冰品': '冰品',
-}
 
 export default function RecordFlow({ records = [], navigateTo, goBack, loadRecords, checkAchievements, params }) {
   const [step, setStep] = useState(0)
@@ -47,11 +30,9 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackCount, setFeedbackCount] = useState(0)
   const [emojiIdx, setEmojiIdx] = useState(0)
-  const [aiLoading, setAiLoading] = useState(false)
-  const [aiResult, setAiResult] = useState(null)
-  const [aiError, setAiError] = useState(null)
   const [category, setCategory] = useState(params?.category || '甜品')
   const [photoDate, setPhotoDate] = useState(new Date().toISOString().slice(0, 16))
+  const [cropImage, setCropImage] = useState(null) // 裁剪前的原图
 
   // 从历史记录中提取自定义风味/口感（不在预设列表中的）
   const PRESET_FLAVORS = ['抹茶', '可可', '咖啡', '果味', '花香', '酒香', '芝士', '坚果', '焦糖', '椰香', '茶味', '豆乳']
@@ -87,57 +68,6 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
       .slice(0, HISTORIC_MAX)
       .map(([name]) => name)
   }, [records])
-
-  const recognizeDessert = async (imageDataUrl) => {
-    setAiLoading(true)
-    setAiError(null)
-    setAiResult(null)
-    try {
-      const res = await fetch('/api/recognize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageDataUrl }),
-      })
-      const data = await res.json()
-      if (data.success && data.data) {
-        const r = data.data
-        setAiError(null)
-        setAiResult(r)
-        // 预填分类
-        if (r.category === '饮品' || r.category === '甜品' || r.category === '冰品') {
-          setCategory(r.category)
-        }
-        // 预填甜度
-        if (r.sweetness && SWEETNESS_OPTIONS.includes(r.sweetness)) {
-          setSweetness(r.sweetness)
-        }
-        // 预填风味（只取我们支持的标签）
-        if (r.flavor?.length) {
-          const matched = r.flavor.filter(f => AI_FLAVOR_MAP[f])
-          if (matched.length) setFlavor(matched)
-        }
-        // 预填口感/配料
-        if (r.texture?.length) {
-          const matched = r.texture.filter(t => AI_TEXTURE_MAP[t] || AI_TOPPINGS_MAP[t])
-          if (matched.length) setTexture(matched)
-        }
-        // 预填温度
-        if (r.temperature && AI_TEMP_MAP[r.temperature]) {
-          setTemperature(r.temperature)
-        }
-      } else {
-        // 有 text 说明 AI 返回了文字（可能是空字符串）
-        setAiError(null)
-        setAiResult({ type: data.text || '识别完成，请手动选择标签' })
-      }
-    } catch (e) {
-      console.error('AI识别请求失败:', e)
-      setAiResult(null)
-      setAiError('AI 识别出错，请手动选择标签')
-    } finally {
-      setAiLoading(false)
-    }
-  }
 
   const DESSERT_EMOJIS = ['🍰', '🧋', '🍦', '🍮', '🧁', '🍪', '🥮', '🍩', '🍫', '🥧']
 
@@ -175,24 +105,23 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
   const handlePhotoCapture = async (e) => {
     const file = e.target.files?.[0]
     if (file) {
-      setAiLoading(true)
       const reader = new FileReader()
-      reader.onload = async (ev) => {
-        try {
-          const compressed = await compressImage(ev.target.result)
-          // 存储到本地（base64 dataUrl）
-          setPhoto(compressed)
-          setStep(1)
-          // AI 自动识别
-          recognizeDessert(compressed)
-        } catch (err) {
-          console.error('图片处理失败:', err)
-          setAiResult(null)
-          setAiError('图片处理失败')
-          setAiLoading(false)
-        }
+      reader.onload = (ev) => {
+        setCropImage(ev.target.result) // 先显示裁剪界面
       }
       reader.readAsDataURL(file)
+    }
+  }
+
+  const handleCropDone = async (croppedDataUrl) => {
+    try {
+      const compressed = await compressImage(croppedDataUrl)
+      setPhoto(compressed)
+      setCropImage(null)
+      setStep(1)
+    } catch (err) {
+      console.error('图片处理失败:', err)
+      setCropImage(null)
     }
   }
 
@@ -263,8 +192,9 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
   // ── Step 0: Photo ──
   if (step === 0) {
     return (
-      <div>
-        <div className="nav-bar">
+      <>
+        <div>
+          <div className="nav-bar">
           <span className="text-base text-caramel cursor-pointer" onClick={goBack}>
             ✕ 取消
           </span>
@@ -332,14 +262,23 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
           )}
         </div>
       </div>
+      {cropImage && (
+        <CropModal
+          image={cropImage}
+          onCropDone={handleCropDone}
+          onCancel={() => setCropImage(null)}
+        />
+      )}
+    </>
     )
   }
 
   // ── Step 1: Rating ──
   if (step === 1) {
     return (
-      <div>
-        <div className="nav-bar">
+      <>
+        <div>
+          <div className="nav-bar">
           <span className="text-base text-caramel cursor-pointer" onClick={() => setStep(0)}>
             ← 返回
           </span>
@@ -356,7 +295,7 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
                 <img src={photo} alt="" className="w-full h-full object-cover" />
                 <button
                   className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs cursor-pointer"
-                  onClick={() => { setStep(0); setPhoto(null); setAiLoading(false); setAiResult(null); setAiError(null) }}
+                  onClick={() => { setStep(0); setPhoto(null) }}
                 >
                   📷 重拍
                 </button>
@@ -371,26 +310,6 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
             <div className="text-4xl font-bold text-caramel">{rating} 勺</div>
             <div className="text-sm text-text-secondary mt-2">
               {RATING_TEXTS[rating] || '还不错'}
-            </div>
-
-            {/* AI 识别状态 */}
-            <div className="mt-4 h-6">
-              {aiLoading && (
-                <div className="text-xs text-matcha animate-pulse">
-                  🤖 正在识别…
-                </div>
-              )}
-              {aiResult && !aiLoading && (
-                <div className="text-xs text-matcha">
-                  🤖 已识别：{aiResult.type || aiResult.sweetness ? '识别成功' : ''}
-                  {aiResult.type && <span className="text-caramel font-medium ml-1">{aiResult.type}</span>}
-                </div>
-              )}
-              {aiError && !aiLoading && (
-                <div className="text-xs text-strawberry">
-                  🤖 识别失败，到标签页可手动选择
-                </div>
-              )}
             </div>
 
             {/* Slider */}
@@ -417,14 +336,23 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
           </div>
         </div>
       </div>
+      {cropImage && (
+        <CropModal
+          image={cropImage}
+          onCropDone={handleCropDone}
+          onCancel={() => setCropImage(null)}
+        />
+      )}
+    </>
     )
   }
 
   // ── Step 2: Tags ──
   if (step === 2) {
     return (
-      <div>
-        <div className="nav-bar">
+      <>
+        <div>
+          <div className="nav-bar">
           <span className="text-base text-caramel cursor-pointer" onClick={() => setStep(1)}>
             ← 返回
           </span>
@@ -453,26 +381,6 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
               </span>
             ))}
           </div>
-
-          {/* AI 识别结果 */}
-          {(aiResult || aiLoading || aiError) && (
-            <div className="mb-3 px-3 py-2 rounded bg-matcha/5 border border-matcha/20 text-xs flex items-center gap-2">
-              {aiLoading && <span className="text-matcha animate-pulse">🤖 AI 识别中…</span>}
-              {aiResult && !aiLoading && (
-                <span className="text-matcha">
-                  🤖 AI 已识别
-                  {aiResult.type && <span className="font-semibold ml-1">「{aiResult.type}」</span>}
-                  ，标签已自动填入，可手动调整
-                </span>
-              )}
-              {aiError && !aiLoading && (
-                <>
-                  <span className="text-strawberry">🤖 AI 识别失败</span>
-                  <span className="text-caramel cursor-pointer ml-auto" onClick={() => recognizeDessert(photo)}>重试</span>
-                </>
-              )}
-            </div>
-          )}
 
           {/* 甜度 - 星星选择 */}
           <div className="mb-[18px]">
@@ -677,12 +585,21 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
           </div>
         </div>
       </div>
+      {cropImage && (
+        <CropModal
+          image={cropImage}
+          onCropDone={handleCropDone}
+          onCancel={() => setCropImage(null)}
+        />
+      )}
+    </>
     )
   }
 
   // ── Step 3: Details + Submit ──
   return (
-    <div>
+    <>
+      <div>
       <div className="nav-bar">
         <span className="text-base text-caramel cursor-pointer" onClick={() => setStep(2)}>
           ← 返回
@@ -797,5 +714,13 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
         )}
       </div>
     </div>
+      {cropImage && (
+        <CropModal
+          image={cropImage}
+          onCropDone={handleCropDone}
+          onCancel={() => setCropImage(null)}
+        />
+      )}
+    </>
   )
 }

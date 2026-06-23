@@ -1,54 +1,13 @@
 import { useState } from 'react'
 import { getMonthlyStats, getWeeklySummary, groupByShop } from '../data/store'
+import { formatPrice } from '../utils/format'
 
 export default function StatsScreen({ records, navigateTo }) {
   const stats = getMonthlyStats(records)
   const week = getWeeklySummary(records)
   const shops = groupByShop(records).slice(0, 5)
-  const [aiReport, setAiReport] = useState(null)
-  const [aiReportLoading, setAiReportLoading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [previewBlob, setPreviewBlob] = useState(null)
-
-  const generateAiReport = async () => {
-    if (records.length === 0) return
-    setAiReportLoading(true)
-    setAiReport(null)
-    try {
-      // 计算摘要数据
-      const total = records.length
-      const avgRating = (records.reduce((s, r) => s + r.rating, 0) / total).toFixed(1)
-      const topFlavors_ = Object.entries(records.reduce((acc, r) => { (r.flavor || []).forEach(f => acc[f] = (acc[f]||0)+1); return acc }, {}))
-        .sort((a,b) => b[1]-a[1]).slice(0, 3).map(([n,c]) => `${n}${c}次`).join('、')
-      const topShops_ = Object.entries(records.reduce((acc, r) => { if (r.shop_name) acc[r.shop_name] = (acc[r.shop_name]||0)+1; return acc }, {}))
-        .sort((a,b) => b[1]-a[1]).slice(0, 3).map(([n,c]) => `${n}(${c}次)`).join('、')
-      const cats = records.reduce((acc, r) => { const c = r.category||'甜品'; acc[c] = (acc[c]||0)+1; return acc }, {})
-      const catSummary = Object.entries(cats).map(([k,v]) => `${k}${v}块`).join('、')
-
-      const res = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: `你是一个甜品爱好者的私人饮食分析师。根据以下数据生成一段有趣、温暖的个性化口味报告（100字以内，不要啰嗦，语气像朋友聊天）：
-
-总记录：${total}块
-平均评分：🥄${avgRating}
-热门风味：${topFlavors_ || '暂无'}
-常去店铺：${topShops_ || '暂无'}
-分类：${catSummary}
-总花费：¥${stats.totalSpent}
-
-写一段中文报告，分析饮食习惯、口味偏好，给出有趣的小发现。直接输出内容，不要前缀。`
-        })
-      })
-      const data = await res.json()
-      if (data.success) setAiReport(data.text)
-      else setAiReport('生成失败，请重试')
-    } catch (e) {
-      setAiReport('网络错误，请重试')
-    }
-    setAiReportLoading(false)
-  }
 
   const generateReportImage = async (reportText, stats, allRecords) => {
     const canvas = document.createElement('canvas')
@@ -76,7 +35,7 @@ export default function StatsScreen({ records, navigateTo }) {
       { label: '总计', value: `${allRecords.length}块`, color: '#8B5E3C' },
       { label: '本月', value: `${stats.monthCount}块`, color: '#E8716D' },
       { label: '平均评分', value: `🥄${stats.avgRating}`, color: '#7DA87B' },
-      { label: '总花费', value: `¥${stats.totalSpent}`, color: '#8B5E3C' },
+      { label: '总花费', value: `¥${formatPrice(stats.totalSpent)}`, color: '#8B5E3C' },
     ]
     boxes.forEach(({ label, value, color }, i) => {
       const x = 30 + i * 125
@@ -191,6 +150,35 @@ export default function StatsScreen({ records, navigateTo }) {
 
   const flavorColors = ['bg-matcha', '#6D4C41', 'bg-strawberry', 'bg-butter']
 
+  // 模板生成口味报告（放在所有数据变量后面）
+  const templateReport = (() => {
+    if (records.length === 0) return ''
+    const parts = []
+    parts.push(`🍰 已经探索了 ${stats.totalCount} 块甜品`)
+    const flavorTop = topFlavors.slice(0, 3)
+    if (flavorTop.length > 0) {
+      const [first] = flavorTop
+      parts.push(`最钟情「${first.name}」风味（占 ${first.pct}%）`)
+      if (flavorTop.length > 1) {
+        parts.push(`也爱 ${flavorTop.slice(1).map(f => f.name).join('、')}`)
+      }
+    }
+    if (shops.length > 0) {
+      parts.push(`最常去 ${shops[0].name}（${shops[0].count} 次）`)
+    }
+    if (Number(stats.avgRating) >= 4) {
+      parts.push(`平均 🥄${stats.avgRating}，品味很挑剔哦`)
+    }
+    const cats = [
+      ['甜品', catDessert], ['饮品', catDrink], ['冰品', catIce]
+    ].filter(([_, c]) => c > 0).sort((a, b) => b[1] - a[1])
+    if (cats.length > 0) {
+      const [topCat] = cats[0]
+      parts.push(`最爱吃${topCat}`)
+    }
+    return parts.join(' · ')
+  })()
+
   return (
     <div>
       <div className="nav-bar">
@@ -208,11 +196,11 @@ export default function StatsScreen({ records, navigateTo }) {
           <div className="text-xs text-text-secondary mt-0.5">总计 · 块</div>
         </div>
         <div className="bg-card-bg rounded p-4 text-center shadow-card">
-          <div className="text-[28px] font-bold text-caramel">¥{stats.monthSpent}</div>
+          <div className="text-[28px] font-bold text-caramel">¥{formatPrice(stats.monthSpent)}</div>
           <div className="text-xs text-text-secondary mt-0.5">本月花费</div>
         </div>
         <div className="bg-card-bg rounded p-4 text-center shadow-card">
-          <div className="text-[28px] font-bold text-caramel">¥{stats.totalSpent}</div>
+          <div className="text-[28px] font-bold text-caramel">¥{formatPrice(stats.totalSpent)}</div>
           <div className="text-xs text-text-secondary mt-0.5">总计花费</div>
         </div>
       </div>
@@ -242,7 +230,7 @@ export default function StatsScreen({ records, navigateTo }) {
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="text-center">
-              <div className="text-xl font-bold text-strawberry">¥{week.totalSpent}</div>
+              <div className="text-xl font-bold text-strawberry">¥{formatPrice(week.totalSpent)}</div>
               <div className="text-[10px] text-text-secondary">本周花费</div>
             </div>
           </div>
@@ -417,33 +405,17 @@ export default function StatsScreen({ records, navigateTo }) {
         )}
       </div>
 
-      {/* AI 口味报告 */}
+      {/* 口味报告 */}
       {records.length > 0 && (
         <div className="px-5 pt-5">
           <div className="bg-card-bg rounded p-4 shadow-card">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold text-caramel">🤖 AI 口味报告</span>
-              <button
-                className={`text-xs px-3 py-1 rounded-pill font-medium ${aiReportLoading ? 'bg-text-muted/20 text-text-muted' : 'bg-caramel text-white'}`}
-                onClick={generateAiReport}
-                disabled={aiReportLoading}
-              >
-                {aiReportLoading ? '生成中…' : aiReport ? '重新生成' : '生成报告'}
+              <span className="text-sm font-bold text-caramel">📝 口味报告</span>
+              <button className="text-xs px-3 py-1 rounded-pill font-medium bg-caramel text-white" onClick={() => generateReportImage(templateReport, stats, records)}>
+                🖼️ 生成图片
               </button>
             </div>
-            {aiReportLoading && (
-              <div className="text-xs text-text-secondary animate-pulse py-2">🤖 AI 正在分析你的口味习惯…</div>
-            )}
-            {aiReport && !aiReportLoading && (
-              <div className="text-xs text-text-primary leading-relaxed py-1">{aiReport}</div>
-            )}
-            {aiReport && !aiReportLoading && (
-              <div className="flex gap-2 mt-2">
-                <button className="flex-1 py-2 text-xs bg-caramel text-white rounded-pill font-medium" onClick={() => generateReportImage(aiReport, stats, records)}>
-                  🖼️ 生成图片
-                </button>
-              </div>
-            )}
+            <div className="text-xs text-text-primary leading-relaxed py-1">{templateReport}</div>
           </div>
         </div>
       )}

@@ -119,14 +119,10 @@ case 'weekly-report':
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FFF0F0] p-5">
+    <div className="min-h-dvh bg-[#FFF0F0]">
       <div className="phone-frame">
         <StatusBar />
-        <div
-          className={`overflow-y-auto overflow-x-hidden scroll-hide ${
-            showTabs ? 'h-[calc(844px-44px-64px)]' : 'h-[calc(844px-44px)]'
-          }`}
-        >
+        <div className="flex-1 overflow-y-auto overflow-x-hidden scroll-hide">
           <ErrorBoundary>{renderScreen()}</ErrorBoundary>
         </div>
         {showTabs && (

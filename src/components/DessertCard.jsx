@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getRecordImage } from '../data/store'
+import { formatPrice } from '../utils/format'
 
 export default function DessertCard({ record, onClick, onDelete, onShopClick, onShare }) {
   const { has_image, rating, texture, flavor, shop_name, price, is_homemade, name, id } = record
@@ -119,7 +120,7 @@ export default function DessertCard({ record, onClick, onDelete, onShopClick, on
           {is_homemade ? `🏠 自制` : `📍 ${shop_name || '未知店铺'}`}
         </span>
         <span className="text-[13px] text-caramel font-semibold">
-          {is_homemade ? '—' : price ? `¥${price}` : ''}
+          {is_homemade ? '—' : price ? `¥${formatPrice(price)}` : ''}
         </span>
       </div>
     </div>

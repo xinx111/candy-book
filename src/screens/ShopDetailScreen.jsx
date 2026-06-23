@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { groupByDate, deleteRecord } from '../data/store'
+import { formatPrice } from '../utils/format'
 import DessertCard from '../components/DessertCard'
 
 export default function ShopDetailScreen({ records, params, navigateTo, goBack, loadRecords }) {
@@ -113,7 +114,7 @@ export default function ShopDetailScreen({ records, params, navigateTo, goBack, 
           </div>
           <div className="w-px h-8 bg-white/30" />
           <div className="text-center">
-            <div className="text-white text-2xl font-bold">¥{stats.totalSpent}</div>
+            <div className="text-white text-2xl font-bold">¥{formatPrice(stats.totalSpent)}</div>
             <div className="text-white/70 text-[11px]">总计花费</div>
           </div>
         </div>

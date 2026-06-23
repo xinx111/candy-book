@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { getRecord, deleteRecord } from '../data/store'
 import { RATING_TEXTS } from '../data/constants'
 import { generateShareCard, shareCard, generateAiCopy } from '../utils/share'
+import { formatPrice } from '../utils/format'
 
 function renderSpoons(rating) {
   const n = Math.floor(Number(rating))
@@ -159,7 +160,7 @@ export default function DetailScreen({ params, navigateTo, goBack, loadRecords }
         )}
         {is_homemade && <div className="text-sm text-matcha">🏠 自制</div>}
         {!is_homemade && price && (
-          <div className="text-sm text-caramel font-semibold leading-relaxed">¥ {price}</div>
+          <div className="text-sm text-caramel font-semibold leading-relaxed">¥ {formatPrice(price)}</div>
         )}
       </div>
 

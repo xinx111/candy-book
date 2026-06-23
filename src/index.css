@@ -23,9 +23,9 @@
 }
 
 @layer components {
-  /* Phone frame */
+  /* Phone frame - 响应式，适配 Android 屏幕 */
   .phone-frame {
-    @apply w-[390px] h-[844px] bg-cream rounded-[40px] relative;
+    @apply w-full max-w-[430px] h-dvh bg-cream relative flex flex-col mx-auto;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), inset 0 0 0 2px #F0D0D0;
   }
 

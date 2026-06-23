@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef } from 'react'
 import { clearAll, getMonthlyStats } from '../data/store'
 import { ACHIEVEMENTS } from '../data/constants'
+import { formatPrice } from '../utils/format'
 
 const AVATARS = ['🍰', '🧋', '🍦', '🍮', '🧁', '🍪', '🥮', '🍩', '🍫', '🥧', '🍨', '🍭']
 
@@ -305,7 +306,7 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
             <div className="text-[11px] text-white/60">本月·块</div>
           </div>
           <div className="flex-1 bg-white/15 rounded-lg py-2 text-center">
-            <div className="text-white font-bold text-lg">¥{stats.totalSpent}</div>
+            <div className="text-white font-bold text-lg">¥{formatPrice(stats.totalSpent)}</div>
             <div className="text-[11px] text-white/60">总计花费</div>
           </div>
           <div className="flex-1 bg-white/15 rounded-lg py-2 text-center">

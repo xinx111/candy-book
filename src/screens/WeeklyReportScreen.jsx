@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { getWeeklySummary, getRecordImage } from '../data/store'
+import { formatPrice } from '../utils/format'
 
 function BestThumb({ id }) {
   const [src, setSrc] = useState(null)
@@ -15,9 +16,6 @@ const COLORS = {
 }
 
 export default function WeeklyReportScreen({ records, navigateTo, goBack }) {
-  const [aiReport, setAiReport] = useState(null)
-  const [aiLoading, setAiLoading] = useState(false)
-  const [aiError, setAiError] = useState('')
 
   const week = getWeeklySummary(records)
 
@@ -70,61 +68,40 @@ export default function WeeklyReportScreen({ records, navigateTo, goBack }) {
   }
   const maxBucket = Math.max(...Object.values(buckets), 1)
 
-  const generateAiReport = useCallback(async () => {
-    if (weekRecords.length === 0) return
-    setAiLoading(true)
-    setAiError('')
-    setAiReport(null)
-    try {
-      const flavorSummary = topFlavors.map(([n, c]) => `${n}(${c}次)`).join('、')
-      const shopSummary = topShops.map(([n, c]) => `${n}(${c}次)`).join('、')
-      const catCounts = {}
-      for (const r of weekRecords) {
-        const c = r.category || '甜品'
-        catCounts[c] = (catCounts[c] || 0) + 1
+  // 模板生成周报总结
+  const templateReport = (() => {
+    if (weekRecords.length === 0) return ''
+    const parts = []
+    // 第一句：总量概括
+    parts.push(`📊 这周你吃了 ${week.totalCount} 块甜品`)
+    // 风味
+    if (topFlavors.length > 0) {
+      const [topName, topCount] = topFlavors[0]
+      parts.push(`最爱的是「${topName}」风味（出现了 ${topCount} 次）`)
+      if (topFlavors.length > 1) {
+        parts.push(`还有 ${topFlavors.slice(1, 3).map(([n]) => n).join('、')} 也不错`)
       }
-      const catSummary = Object.entries(catCounts).map(([k, v]) => `${k}${v}块`).join('、')
-      const best = bestRecord
-        ? `${bestRecord.name || (bestRecord.flavor || []).join('·')}（🥄${bestRecord.rating}分${bestRecord.shop_name ? '，在' + bestRecord.shop_name : ''}）`
-        : '暂无'
-
-      const res = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: `你是一个甜品诗人的助手。根据本周的甜品数据，生成一段温暖有趣的周报总结（150字以内，像朋友聊天，不要太啰嗦）：
-
-📊 本周数据（${week.dateRange}）
-总记录：${week.totalCount}块
-平均评分：🥄${week.avgRating}
-本周花费：¥${week.totalSpent}
-风味排行：${flavorSummary || '暂无'}
-常去店铺：${shopSummary || '暂无'}
-分类分布：${catSummary}
-本周最佳：${best}
-
-要求：
-1. 第一句话是亮点总结（比如"这周你吃了X块甜品..."）
-2. 中间写饮食习惯分析（偏好什么口味、有什么有趣的发现）
-3. 最后一句话是温暖的期待
-
-直接输出内容，不要任何前缀。`
-        }),
-      })
-      const data = await res.json()
-      if (data.success) setAiReport(data.text)
-      else setAiError('AI 报告生成失败')
-    } catch (e) {
-      setAiError('网络错误，请重试')
     }
-    setAiLoading(false)
-  }, [weekRecords, week, topFlavors, topShops, bestRecord])
-
-  useEffect(() => {
-    if (weekRecords.length > 0 && !aiReport && !aiLoading) {
-      generateAiReport()
+    // 店铺
+    if (topShops.length > 0) {
+      const [shopName, shopCount] = topShops[0]
+      parts.push(`最常去 ${shopName}（${shopCount} 次）`)
     }
-  }, [])
+    // 最佳
+    if (bestRecord) {
+      const name = bestRecord.name || (bestRecord.flavor || []).slice(0, 2).join('·') || '某甜品'
+      parts.push(`最佳体验：${name}（🥄${bestRecord.rating} 分${bestRecord.shop_name ? ` @${bestRecord.shop_name}` : ''}）`)
+    }
+    // 评分
+    const highCount = (buckets['5'] || 0) + (buckets['4'] || 0)
+    if (highCount > 0 && week.totalCount > 0) {
+      const pct = Math.round((highCount / week.totalCount) * 100)
+      if (pct > 50) parts.push(`${pct}% 都是高分评价，品味不错！`)
+    }
+    parts.push(`下周也要继续甜蜜哦 🍰`)
+    return parts.join(' · ')
+  })()
+
 
   const maxDaily = Math.max(...week.dailyCount.map(d => d.count), 1)
 
@@ -150,23 +127,10 @@ export default function WeeklyReportScreen({ records, navigateTo, goBack }) {
 
       {weekRecords.length > 0 && (
         <div className="px-5 pt-4 pb-8">
-          {/* AI 总结（顶部醒目） */}
+          {/* 本周总结（顶部醒目） */}
           <div className="bg-gradient-to-br from-caramel to-[#A07050] rounded-xl p-5 shadow-lg mb-4">
-            <div className="text-white/70 text-xs font-medium mb-2">🤖 AI 周报</div>
-            {aiLoading && (
-              <div className="text-white/90 text-sm animate-pulse leading-relaxed">AI 正在分析你的甜蜜一周…</div>
-            )}
-            {aiReport && !aiLoading && (
-              <div className="text-white text-sm leading-relaxed">{aiReport}</div>
-            )}
-            {aiError && !aiLoading && (
-              <div>
-                <div className="text-white/80 text-sm leading-relaxed">{aiError}</div>
-                <button className="text-white/60 text-xs mt-2 underline" onClick={generateAiReport}>
-                  重新生成
-                </button>
-              </div>
-            )}
+            <div className="text-white/70 text-xs font-medium mb-2">📊 本周小结</div>
+            <div className="text-white text-sm leading-relaxed">{templateReport}</div>
           </div>
 
           {/* 核心数据卡片 */}
@@ -180,7 +144,7 @@ export default function WeeklyReportScreen({ records, navigateTo, goBack }) {
               <div className="text-[11px] text-text-secondary">平均评分</div>
             </div>
             <div className="bg-card-bg rounded-xl p-3.5 text-center shadow-card">
-              <div className="text-[26px] font-bold" style={{ color: COLORS.matcha }}>¥{week.totalSpent}</div>
+              <div className="text-[26px] font-bold" style={{ color: COLORS.matcha }}>¥{formatPrice(week.totalSpent)}</div>
               <div className="text-[11px] text-text-secondary">本周花费</div>
             </div>
           </div>
@@ -343,18 +307,6 @@ export default function WeeklyReportScreen({ records, navigateTo, goBack }) {
             </div>
           </div>
 
-          {/* 重新生成按钮 */}
-          <div className="text-center pt-2">
-            <button
-              className={`text-xs px-4 py-2 rounded-pill font-medium ${
-                aiLoading ? 'bg-text-muted/20 text-text-muted' : 'bg-caramel/10 text-caramel'
-              }`}
-              onClick={generateAiReport}
-              disabled={aiLoading}
-            >
-              {aiLoading ? '🤖 生成中…' : '🔄 重新生成 AI 分析'}
-            </button>
-          </div>
         </div>
       )}
     </div>
