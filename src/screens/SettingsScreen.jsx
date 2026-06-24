@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { getAllRecords, clearAll, importRecords } from '../data/store'
+import { getAllRecords, getRecord, clearAll, importRecords } from '../data/store'
 
 export default function SettingsScreen({ goBack, loadRecords }) {
   const [importMsg, setImportMsg] = useState('')
@@ -7,7 +7,12 @@ export default function SettingsScreen({ goBack, loadRecords }) {
 
   const handleExportJSON = async () => {
     const records = await getAllRecords()
-    const blob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' })
+    // 导出的备份包含照片数据，从 IndexedDB 逐条获取完整记录
+    const fullRecords = await Promise.all(records.map(async (r) => {
+      const full = await getRecord(r.id)
+      return full || r
+    }))
+    const blob = new Blob([JSON.stringify(fullRecords, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
