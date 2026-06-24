@@ -3,6 +3,7 @@ import { groupByDate, deleteRecord, getRecordImage } from '../data/store'
 import DessertCard from '../components/DessertCard'
 import LuckyDice from '../components/LuckyDice'
 import { generateShareCard, shareCard, generateAiCopy } from '../utils/share'
+import { aiSearch } from '../utils/ai'
 
 const EASTER_EGG_PUNS = [
   '🍰 甜品哪有上限？再吃一块！',
@@ -22,6 +23,9 @@ const EMPTY_MESSAGES = [
 
 export default function HomeScreen({ records, navigateTo, loadRecords }) {
   const [search, setSearch] = useState('')
+  const [aiFilter, setAiFilter] = useState(null)
+  const [aiSearchLoading, setAiSearchLoading] = useState(false)
+  const [aiSearchError, setAiSearchError] = useState('')
   const [showLuckyDice, setShowLuckyDice] = useState(false)
   const [sharingId, setSharingId] = useState(null)
   const [displayCount, setDisplayCount] = useState(5)
@@ -46,6 +50,27 @@ export default function HomeScreen({ records, navigateTo, loadRecords }) {
       alert('生成分享卡片失败：' + e.message)
     }
     setSharingId(null)
+  }
+
+  const handleAiSearch = async () => {
+    if (!search.trim()) return
+    setAiSearchLoading(true)
+    setAiSearchError('')
+    setAiFilter(null)
+    try {
+      const filter = await aiSearch(search.trim())
+      setAiFilter(filter)
+    } catch (e) {
+      setAiSearchError('AI 搜索失败，试试普通搜索吧')
+      setTimeout(() => setAiSearchError(''), 3000)
+    }
+    setAiSearchLoading(false)
+  }
+
+  const clearAiSearch = () => {
+    setAiFilter(null)
+    setSearch('')
+    setAiSearchError('')
   }
 
   if (!records || records.length === 0) {
@@ -86,8 +111,24 @@ export default function HomeScreen({ records, navigateTo, loadRecords }) {
     )
   }
 
-  // 搜索过滤（关键词匹配）
+  // 搜索过滤（普通关键词 + AI 智能过滤）
   const filtered = records.filter((r) => {
+    if (aiFilter) {
+      const f = aiFilter
+      if (f.shop && !(r.shop_name || '').toLowerCase().includes(f.shop.toLowerCase())) return false
+      if (f.flavor?.length && !f.flavor.some(v => (r.flavor || []).includes(v))) return false
+      if (f.texture?.length && !f.texture.some(v => (r.texture || []).includes(v))) return false
+      if (f.rating_min && (r.rating || 0) < f.rating_min) return false
+      if (f.q) {
+        const q = f.q.toLowerCase()
+        if (!(r.shop_name || '').toLowerCase().includes(q) &&
+            !(r.name || '').toLowerCase().includes(q) &&
+            !(r.flavor || []).some(f2 => f2.toLowerCase().includes(q)) &&
+            !(r.texture || []).some(t => t.toLowerCase().includes(q)) &&
+            !(r.note || '').toLowerCase().includes(q)) return false
+      }
+      return true
+    }
     if (!search.trim()) return true
     const q = search.trim().toLowerCase()
     return (
@@ -103,7 +144,7 @@ export default function HomeScreen({ records, navigateTo, loadRecords }) {
   const visibleRecords = filtered.slice(0, displayCount)
   const dateGroups = groupByDate(visibleRecords)
   const hasMore = filtered.length > displayCount
-  const hasFilter = search.trim().length > 0
+  const hasFilter = search.trim().length > 0 || aiFilter != null
 
   const formatDateHeader = (dateStr) => {
     const d = new Date(dateStr + 'T00:00:00')
@@ -130,7 +171,7 @@ export default function HomeScreen({ records, navigateTo, loadRecords }) {
             }
           }}
         >🍰 糖记</span>
-        <span className="flex gap-4 text-lg text-text-secondary cursor-pointer">
+        <span className="flex gap-3 text-lg text-text-secondary cursor-pointer items-center">
           <span onClick={() => navigateTo('settings')}>⚙️</span>
         </span>
       </div>
@@ -167,26 +208,57 @@ export default function HomeScreen({ records, navigateTo, loadRecords }) {
         <div className="relative">
           <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-text-muted">🔍</span>
           <input
-            className="form-input pl-9 pr-8 text-sm"
+            className={`form-input pl-9 text-sm ${aiFilter ? 'pr-8' : 'pr-16'}`}
             placeholder="搜索店铺、口味、口感..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setAiFilter(null); setAiSearchError('') }}
           />
-          {search && (
+          {search && !aiFilter && (
+            <>
+              <span
+                className="absolute right-9 top-1/2 -translate-y-1/2 text-xs text-text-muted cursor-pointer"
+                onClick={clearAiSearch}
+              >
+                ✕
+              </span>
+              <span
+                className={`absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-sm ${aiSearchLoading ? 'animate-pulse' : ''}`}
+                onClick={handleAiSearch}
+              >
+                🤖
+              </span>
+            </>
+          )}
+          {aiFilter && (
             <span
               className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-text-muted cursor-pointer"
-              onClick={() => setSearch('')}
+              onClick={clearAiSearch}
             >
               ✕
             </span>
           )}
         </div>
+        {/* AI 搜索状态 */}
+        {(() => {
+          if (aiSearchLoading) return <div className="text-[11px] text-matcha mt-1 animate-pulse">🤖 AI 正在分析你的搜索…</div>
+          if (aiSearchError) return <div className="text-[11px] text-strawberry mt-1">{aiSearchError}</div>
+          if (aiFilter) return (
+            <div className="text-[11px] text-matcha mt-1">
+              🤖 AI 搜索结果
+              {aiFilter.shop && <span className="ml-1">· 店铺：{aiFilter.shop}</span>}
+              {aiFilter.flavor?.length > 0 && <span className="ml-1">· 风味：{aiFilter.flavor.join('、')}</span>}
+              {aiFilter.texture?.length > 0 && <span className="ml-1">· {aiFilter.texture.join('、')}</span>}
+              {aiFilter.rating_min > 0 && <span className="ml-1">· {aiFilter.rating_min}勺以上</span>}
+            </div>
+          )
+          return null
+        })()}
       </div>
 
       {/* Empty search */}
       {hasFilter && dateGroups.length === 0 && (
         <div className="text-center text-text-muted py-10 text-sm">
-          没有找到匹配「{search}」的记录
+          {aiFilter ? '没有找到匹配的记录 🧐' : `没有找到匹配「${search}」的记录`}
         </div>
       )}
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-export default function AchievementModal({ achievement, onClose }) {
+export default function AchievementModal({ achievement, onClose, remaining = 0 }) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function AchievementModal({ achievement, onClose }) {
           className="px-16 py-3.5 bg-strawberry text-white rounded-pill text-base font-semibold"
           onClick={onClose}
         >
-          👍 好的
+          {remaining > 0 ? `🎉 查看下一个（${remaining}个）` : '👍 好的'}
         </button>
       </div>
     </div>

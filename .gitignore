@@ -5,3 +5,4 @@ dist
 uploads/
 .env
 *.log
+src/config.js

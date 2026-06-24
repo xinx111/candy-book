@@ -155,11 +155,13 @@ export default function RecordFlow({ records = [], navigateTo, goBack, loadRecor
       }
       if (isEditing) {
         await updateRecord(params.id, data)
+        await loadRecords()
       } else {
-        await addRecord(data)
+        const newId = await addRecord(data)
+        // 传完整数据检查成就，避免 loadRecords 的 React 状态延迟
+        checkAchievements([...records, { ...data, id: newId }])
+        await loadRecords()
       }
-    await loadRecords()
-    if (!isEditing) checkAchievements()
     setFeedbackCount((prev) => prev + 1)
     setShowFeedback(true)
     setTimeout(() => {

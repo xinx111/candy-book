@@ -346,6 +346,8 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
                 <div className="grid grid-cols-2 gap-2">
                   {ACHIEVEMENTS.map((a) => {
                     const isUnlocked = unlocked.has(a.id)
+                    const prog = a.progress ? a.progress(records) : null
+                    const pct = prog ? Math.min(Math.round((prog.current / prog.max) * 100), 100) : 0
                     return (
                       <div
                         key={a.id}
@@ -361,6 +363,30 @@ export default function ProfileScreen({ records, navigateTo, goBack, loadRecords
                         </div>
                         <div className="text-[10px] text-text-muted">{a.desc}</div>
                         {isUnlocked && <div className="text-[9px] text-matcha mt-0.5">✓ 已解锁</div>}
+                        {prog && !isUnlocked && (
+                          <div className="mt-1.5">
+                            <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-strawberry rounded-full transition-all"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <div className="text-[9px] text-text-muted mt-0.5">
+                              {prog.current}/{prog.max}
+                            </div>
+                          </div>
+                        )}
+                        {prog && isUnlocked && (
+                          <div className="mt-1.5">
+                            <div className="w-full h-1.5 bg-matcha/20 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-matcha rounded-full"
+                                style={{ width: '100%' }}
+                              />
+                            </div>
+                            <div className="text-[9px] text-matcha mt-0.5">完成</div>
+                          </div>
+                        )}
                       </div>
                     )
                   })}

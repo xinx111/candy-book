@@ -28,6 +28,7 @@ export default function App() {
   })
   const [newAchievement, setNewAchievement] = useState(null)
   const [showAchievement, setShowAchievement] = useState(false)
+  const [achievementQueue, setAchievementQueue] = useState([])
 
   const loadRecords = useCallback(async () => {
     try {
@@ -66,18 +67,34 @@ export default function App() {
         (a) => !unlockedAchievements.has(a.id) && a.check(recs)
       )
       if (newlyUnlocked.length > 0) {
-        setNewAchievement(newlyUnlocked[0])
-        setShowAchievement(true)
+        // 按难度从高到低排序（先展示最难达成的）
+        const sorted = [...newlyUnlocked].sort((a, b) => b.difficulty - a.difficulty)
         setUnlockedAchievements((prev) => {
           const next = new Set(prev)
-          newlyUnlocked.forEach((a) => next.add(a.id))
+          sorted.forEach((a) => next.add(a.id))
           localStorage.setItem('tangji-achievements', JSON.stringify([...next]))
           return next
         })
+        setAchievementQueue(sorted.map((a) => a.id))
+        setNewAchievement(sorted[0])
+        setShowAchievement(true)
       }
     },
     [records, unlockedAchievements]
   )
+
+  const closeAchievement = () => {
+    const remaining = achievementQueue.slice(1)
+    if (remaining.length > 0) {
+      setAchievementQueue(remaining)
+      setNewAchievement(ACHIEVEMENTS.find((a) => a.id === remaining[0]))
+      // showAchievement 保持 true，不断弹出下一个
+    } else {
+      setShowAchievement(false)
+      setNewAchievement(null)
+      setAchievementQueue([])
+    }
+  }
 
   const showTabs = SCREENS_WITH_TABS.includes(screen)
 
@@ -138,7 +155,8 @@ case 'weekly-report':
         {showAchievement && newAchievement && (
           <AchievementModal
             achievement={newAchievement}
-            onClose={() => setShowAchievement(false)}
+            onClose={closeAchievement}
+            remaining={achievementQueue.length - 1}
           />
         )}
       </div>

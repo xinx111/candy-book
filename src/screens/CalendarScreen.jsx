@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getRecordImage } from '../data/store'
+import { LITERATURE_QUOTES, getRandomQuote, getQuotesBySeason, getSeasonByMonth } from '../data/literature'
+import { aiMatchQuote } from '../utils/ai'
 
 function CalThumb({ id }) {
   const [src, setSrc] = useState(null)
@@ -27,6 +29,35 @@ export default function CalendarScreen({ records, navigateTo }) {
   const avgRating = dayRecords.length > 0
     ? (dayRecords.reduce((s, r) => s + r.rating, 0) / dayRecords.length).toFixed(1)
     : '0'
+
+  // 文学句子匹配
+  const [quoteOfTheDay, setQuoteOfTheDay] = useState(null)
+  const [quoteLoading, setQuoteLoading] = useState(false)
+
+  useEffect(() => {
+    // 选中日期变化时，匹配文学句子
+    if (dayRecords.length === 0) {
+      setQuoteOfTheDay(null)
+      return
+    }
+
+    // 按当前月份确定季节
+    const season = getSeasonByMonth(viewMonth)
+
+    const pickSeasonalQuote = () => {
+      const seasonal = getQuotesBySeason(season)
+      return seasonal.length > 0
+        ? seasonal[Math.floor(Math.random() * seasonal.length)]
+        : getRandomQuote()
+    }
+
+    // 先尝试 AI 匹配，失败则按季节随机
+    setQuoteLoading(true)
+    aiMatchQuote(dayRecords, LITERATURE_QUOTES).then((matched) => {
+      setQuoteOfTheDay(matched || pickSeasonalQuote())
+      setQuoteLoading(false)
+    })
+  }, [selectedDay, viewMonth])
 
   const prevMonth = () => {
     if (viewMonth === 1) { setViewMonth(12); setViewYear(viewYear - 1) }
@@ -157,6 +188,24 @@ export default function CalendarScreen({ records, navigateTo }) {
           </div>
         )}
       </div>
+
+      {/* 📖 文学句子 */}
+      {quoteOfTheDay && (
+        <div className="mx-5 mt-3 p-4 bg-white rounded shadow-card">
+          {quoteLoading ? (
+            <div className="text-xs text-text-muted animate-pulse">🤖 为你挑选句子…</div>
+          ) : (
+            <>
+              <div className="text-sm text-text-primary italic leading-relaxed">
+                " {quoteOfTheDay.text} "
+              </div>
+              <div className="text-xs text-text-muted mt-2 text-right">
+                —— {quoteOfTheDay.author}{quoteOfTheDay.work ? `《${quoteOfTheDay.work}》` : ''}
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }

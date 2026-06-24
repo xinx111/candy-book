@@ -1,11 +1,15 @@
 import { useState } from 'react'
 import { getMonthlyStats, getWeeklySummary, groupByShop } from '../data/store'
 import { formatPrice } from '../utils/format'
+import { aiSummary } from '../utils/ai'
 
 export default function StatsScreen({ records, navigateTo }) {
   const stats = getMonthlyStats(records)
   const week = getWeeklySummary(records)
   const shops = groupByShop(records).slice(0, 5)
+  const [aiReport, setAiReport] = useState(null)
+  const [aiReportLoading, setAiReportLoading] = useState(false)
+  const [aiFailed, setAiFailed] = useState(false)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [previewBlob, setPreviewBlob] = useState(null)
 
@@ -178,6 +182,25 @@ export default function StatsScreen({ records, navigateTo }) {
     }
     return parts.join(' · ')
   })()
+
+  const generateAiReport = async () => {
+    if (records.length === 0) return
+    setAiReportLoading(true)
+    setAiReport(null)
+    setAiFailed(false)
+    try {
+      const report = await aiSummary(records)
+      setAiReport(report)
+    } catch {
+      setAiFailed(true)
+    }
+    setAiReportLoading(false)
+  }
+
+  const useTemplateFallback = () => {
+    setAiFailed(false)
+    setAiReport(templateReport)
+  }
 
   return (
     <div>
@@ -405,17 +428,44 @@ export default function StatsScreen({ records, navigateTo }) {
         )}
       </div>
 
-      {/* 口味报告 */}
+      {/* 🤖 AI 口味报告 */}
       {records.length > 0 && (
         <div className="px-5 pt-5">
           <div className="bg-card-bg rounded p-4 shadow-card">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold text-caramel">📝 口味报告</span>
-              <button className="text-xs px-3 py-1 rounded-pill font-medium bg-caramel text-white" onClick={() => generateReportImage(templateReport, stats, records)}>
-                🖼️ 生成图片
-              </button>
+              <span className="text-sm font-bold text-caramel">🤖 AI 口味报告</span>
+              <div className="flex gap-1.5">
+                <button
+                  className={`text-xs px-3 py-1 rounded-pill font-medium ${aiReportLoading ? 'bg-text-muted/20 text-text-muted' : 'bg-caramel text-white'}`}
+                  onClick={generateAiReport}
+                  disabled={aiReportLoading}
+                >
+                  {aiReportLoading ? '生成中…' : aiReport ? '重新生成' : '生成报告'}
+                </button>
+                {(aiReport || templateReport) && (
+                  <button className="text-xs px-3 py-1 rounded-pill font-medium bg-butter text-caramel" onClick={() => generateReportImage(aiReport || templateReport, stats, records)}>
+                    🖼️ 生成图片
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="text-xs text-text-primary leading-relaxed py-1">{templateReport}</div>
+            {aiReportLoading && (
+              <div className="text-xs text-text-secondary animate-pulse py-2">🤖 AI 正在分析你的口味习惯…</div>
+            )}
+            {aiFailed && (
+              <div className="text-xs text-strawberry py-2">
+                🤖 AI 暂时离线
+                <span className="text-caramel font-medium cursor-pointer ml-1" onClick={useTemplateFallback}>
+                  要用普通总结嘛？
+                </span>
+              </div>
+            )}
+            {aiReport && !aiReportLoading && !aiFailed && (
+              <div className="text-xs text-text-primary leading-relaxed py-1">{aiReport}</div>
+            )}
+            {!aiReport && !aiReportLoading && !aiFailed && (
+              <div className="text-xs text-text-primary leading-relaxed py-1">{templateReport}</div>
+            )}
           </div>
         </div>
       )}
