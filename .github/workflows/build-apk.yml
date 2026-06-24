@@ -21,7 +21,7 @@ jobs:
       - name: 配置 Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: 写入 API Key（从 Secrets 读取）
         run: |
